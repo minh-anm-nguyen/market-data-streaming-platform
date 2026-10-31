@@ -24,18 +24,26 @@ cmake-build-*/
 # code changes.
 runs/
 */runs/
-*/reports/
+*/reports/runs/
 */.artifacts/
 out/
 #
-# */reports/ in particular, not just */reports/runs/. The first commit tracked
-# 09-*/reports/{audit.json,infra.json,infra-observed.json,pipeline.log,
-# persistence.log}, all written by runs on one laptop: they carry that host's
-# paths, its Kafka cluster id and the timestamps of those runs. A committed
-# audit.json is worse than no audit.json, because it reads as this checkout's
-# verdict when it is a snapshot of someone else's machine. CI writes its own
-# and uploads it as a build artifact (.github/workflows/p09-contracts.yml);
-# nothing reads a committed copy.
+# P09's reports/ is output in its entirety, so it is named rather than matched.
+# The first commit tracked audit.json, infra.json, infra-observed.json,
+# pipeline.log and persistence.log, all written by runs on one laptop: they
+# carry that host's paths, its Kafka cluster id and the timestamps of those
+# runs. A committed audit.json is worse than no audit.json, because it reads as
+# this checkout's verdict when it is a snapshot of someone else's machine. CI
+# writes its own and uploads it as a build artifact
+# (.github/workflows/p09-contracts.yml); nothing reads a committed copy.
+#
+# A blanket */reports/ was the first attempt and was wrong: P02's reports/
+# holds interop.json and cpp-cases.json, which are conformance baselines a
+# reviewer is meant to diff, and P08 keeps a report template there. Those
+# projects ignore their own run output themselves -- P03 and P07 each track
+# only a reports/.gitkeep -- so the only directory this file needs to speak
+# for is P09's.
+09-full-system-integration/reports/
 
 # Generated C++ proto code. Regenerated from the canonical schema by
 # 02-*/scripts/generate_proto.sh, and the schema itself is guarded by
