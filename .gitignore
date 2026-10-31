@@ -24,9 +24,18 @@ cmake-build-*/
 # code changes.
 runs/
 */runs/
-*/reports/runs/
+*/reports/
 */.artifacts/
 out/
+#
+# */reports/ in particular, not just */reports/runs/. The first commit tracked
+# 09-*/reports/{audit.json,infra.json,infra-observed.json,pipeline.log,
+# persistence.log}, all written by runs on one laptop: they carry that host's
+# paths, its Kafka cluster id and the timestamps of those runs. A committed
+# audit.json is worse than no audit.json, because it reads as this checkout's
+# verdict when it is a snapshot of someone else's machine. CI writes its own
+# and uploads it as a build artifact (.github/workflows/p09-contracts.yml);
+# nothing reads a committed copy.
 
 # Generated C++ proto code. Regenerated from the canonical schema by
 # 02-*/scripts/generate_proto.sh, and the schema itself is guarded by
