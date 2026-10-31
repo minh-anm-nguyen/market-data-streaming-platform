@@ -34,7 +34,7 @@ from typing import Any
 
 from .contracts import EVENT_TICK, SourceIdentity
 from .errors import ContractError, Verdict
-from .rows import RawRow
+from .rows import P06_JSON_V1, RawRow
 from .snapshot_cutter import SnapshotCut, SourceManifest
 
 
@@ -218,6 +218,7 @@ def audit_raw(
     manifest: SourceManifest,
     cut: SnapshotCut,
     event_time_window: EventTimeWindow | None = None,
+    digest_encoding: str = P06_JSON_V1,
 ) -> RawAuditReport:
     """Reconcile raw rows against the sealed source. Pure; no I/O.
 
@@ -264,7 +265,9 @@ def audit_raw(
             invalid_identities.add(identity)
             continue
 
-        recomputed = row.recomputed_digest()
+        # Under the encoding the rows' writer used, not whichever one this
+        # module happens to import. See rows.DIGEST_ENCODINGS.
+        recomputed = row.recomputed_digest(encoding=digest_encoding)
         if stored != recomputed:
             report.digest_mismatches.append(tuple(identity))
             invalid_identities.add(identity)

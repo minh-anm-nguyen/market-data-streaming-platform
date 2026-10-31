@@ -38,7 +38,7 @@ from .contracts import (
     payload_digest,
 )
 from .oracle import Bar, BarKey
-from .rows import RawRow, TopicPartition, make_raw_row
+from .rows import P06_JSON_V1, RawRow, TopicPartition, make_raw_row
 from .snapshot_cutter import (
     AcceptedEvent,
     SnapshotCut,
@@ -82,6 +82,11 @@ class Corpus:
     manifest: SourceManifest
     raw_rows: list[RawRow]
     cut: SnapshotCut
+    #: Which encoding wrote ``raw_rows[*].payload_digest``. A corpus built here
+    #: is P06's own work, so it defaults to P06's encoding; one assembled from
+    #: P05's landing table says so (``raw_source.corpus_from_raw``). The
+    #: encoding travels with the rows because only their producer knows it.
+    digest_encoding: str = P06_JSON_V1
 
     def ticks_in_scope(self) -> list[RawRow]:
         return [

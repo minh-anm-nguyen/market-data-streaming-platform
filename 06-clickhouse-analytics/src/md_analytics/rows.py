@@ -25,6 +25,26 @@ from .contracts import (
     utc_date_from_ns,
 )
 from .errors import ContractError
+from .p05_core_v1 import ENCODING as P05_CORE_V1
+from .p05_core_v1 import payload_digest as _p05_core_v1_digest
+
+#: P06's own encoding: canonical JSON, per :func:`contracts.payload_digest`.
+#: It governs P06's canonical tables and every fixture built in-process.
+P06_JSON_V1: Final = "P06-JSON-V1"
+
+#: Which encoding produced a stored ``payload_digest``.
+#:
+#: There are two because there are genuinely two writers. P06 hashes canonical
+#: JSON for rows it creates; P05 hashes its own length-prefixed binary layout
+#: for the rows it lands in ``md_ingest.market_events_raw``. Recomputing a
+#: stored digest under the wrong one does not produce a near miss -- it
+#: mismatches every row, which is precisely how this was found. So the encoding
+#: travels with the data (``Corpus.digest_encoding``) instead of being assumed
+#: by whoever happens to be verifying.
+DIGEST_ENCODINGS: Final = {
+    P06_JSON_V1: payload_digest,
+    P05_CORE_V1: _p05_core_v1_digest,
+}
 
 #: Column order of ``md_ingest.market_events_raw`` (section 0.1). Pinned here so
 #: a schema preflight can compare names *and* order against the live table
@@ -145,8 +165,23 @@ class RawRow(NamedTuple):
             source_schema_version=self.source_schema_version,
         )
 
-    def recomputed_digest(self) -> str:
-        return payload_digest(self.semantic_core())
+    def recomputed_digest(self, *, encoding: str = P06_JSON_V1) -> str:
+        """Recompute this row's digest under ``encoding``.
+
+        The default is P06's own, which is right for a row P06 built. A row read
+        out of P05's landing table must pass :data:`P05_CORE_V1`, because the
+        digest stored beside it was written by P05.
+        """
+        try:
+            digest_fn = DIGEST_ENCODINGS[encoding]
+        except KeyError:
+            raise ContractError(
+                "unknown digest encoding %r; known: %s"
+                % (encoding, ", ".join(sorted(DIGEST_ENCODINGS))),
+                code="UNKNOWN_DIGEST_ENCODING",
+                value=encoding,
+            ) from None
+        return digest_fn(self.semantic_core())
 
     def stored_digest(self) -> str:
         return require_digest_format(self.payload_digest)

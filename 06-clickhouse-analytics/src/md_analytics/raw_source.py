@@ -46,11 +46,15 @@ from .contracts import (
     EVENT_QUOTE,
     EVENT_TICK,
     SourceIdentity,
-    payload_digest,
     semantic_core,
 )
 from .errors import ContractError, MdAnalyticsError
 from .fixtures import Corpus
+# Everything this module reads was written by P05, so every digest it computes
+# or compares is P05's, never contracts.payload_digest. That function is
+# deliberately not imported here: importing both is how they got mixed up.
+from .p05_core_v1 import ENCODING as P05_CORE_V1
+from .p05_core_v1 import payload_digest as p05_payload_digest
 from .rows import RawRow, TopicPartition
 from .snapshot_cutter import (
     TERMINAL_P05_STATES,
@@ -274,6 +278,11 @@ def accepted_from_p03_handoff(path: str | Path) -> tuple[AcceptedEvent, ...]:
         # The expected digest is computed from what P03 forwarded, not read back
         # from the rows being audited. That is what lets a corrupted row differ
         # from its expectation instead of defining it.
+        #
+        # In P05's encoding, because it is compared against the digest P05
+        # stored. Computed in P06's canonical JSON instead, this matched
+        # nothing: all 2,000 identities read as missing and all 85,520 rows as
+        # digest mismatches, for a dataset that was completely present.
         try:
             core = semantic_core(
                 dataset_id=str(event_id["dataset_id"]),
@@ -303,7 +312,7 @@ def accepted_from_p03_handoff(path: str | Path) -> tuple[AcceptedEvent, ...]:
                     sequence=_as_int(event_id["sequence"], "sequence"),
                 ),
                 event_kind=kind,
-                payload_digest=payload_digest(core),
+                payload_digest=p05_payload_digest(core),
             )
         )
     if not accepted:
@@ -419,4 +428,8 @@ def corpus_from_raw(
         ),
         raw_rows=rows,
         cut=cut,
+        # These rows came out of P05's table, so their stored digests are
+        # P05's. Declared rather than defaulted: audit_raw recomputes under
+        # whatever the corpus says, and the default is P06's own encoding.
+        digest_encoding=P05_CORE_V1,
     )

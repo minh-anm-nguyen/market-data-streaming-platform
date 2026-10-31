@@ -130,7 +130,12 @@ def run_build(
 
     schema = schema_sha256 if schema_sha256 is not None else expected_raw_digest()
     bank = sql_bank if sql_bank is not None else SqlBank()
-    audit = audit_raw(corpus.raw_rows, manifest=corpus.manifest, cut=corpus.cut)
+    audit = audit_raw(
+        corpus.raw_rows,
+        manifest=corpus.manifest,
+        cut=corpus.cut,
+        digest_encoding=corpus.digest_encoding,
+    )
 
     result = PipelineResult(
         dataset_id=corpus.dataset_id,
