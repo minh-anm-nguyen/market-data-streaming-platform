@@ -30,3 +30,20 @@ verdict=PASS safety=PASS performance=NOT_RUN exit=0 artifacts=/home/minh/p09-pip
 [WARN] kafka retention headroom     not evaluated: no live broker to read log-start and end offsets from
 
 PREFLIGHT OK
+
+RUN VERDICT: COMPLETE
+  reason: every consumed record reached a terminal durable result and all commits were confirmed; completeness against the source still requires independent reconciliation (I-08)
+  report: /work/p05/run.json
+
+This verdict covers only what this process proved: every consumed record reached a terminal durable result. It is NOT a completeness claim against the source. Run the reconciler against a frozen Kafka cut and the P01 manifest for that (spec I-08).
+== 10. rows landed in ClickHouse ==
+tick	14133	387
+quote	54953	1610
+== 11. seal the Kafka cut ==
+  sealed 16 partition(s): end offsets sum 15976, 16 fully covered by the committed frontier
+  wrote /work/p05/cut.json
+== 12. P06 build from the REAL raw table ==
+  dataset ds-556f96b184c834c2
+  STAGE FAILED: p06-build (exit 2)
+report: /home/minh/p09-pipeline-20261031T091246Z/pipeline-report.json
+verdict: FAIL

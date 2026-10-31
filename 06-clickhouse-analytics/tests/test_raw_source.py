@@ -16,6 +16,7 @@ import pytest
 from md_analytics.contracts import EVENT_QUOTE, EVENT_TICK
 from md_analytics.raw_source import (
     RAW_COLUMNS,
+    RAW_SELECT,
     RawSourceError,
     accepted_from_p03_handoff,
     corpus_from_raw,
@@ -46,7 +47,10 @@ def _values(**overrides) -> list:
         "kafka_offset": 17,
         "topic_generation": "md-v1-generation-a",
         "ingest_run_id": "run-1",
-        "ingested_at": 1793322000111222333,
+        # Milliseconds: toUnixTimestamp64Milli is what RAW_SELECT asks for, and
+        # scale 3 is all the column stores. The first version of this fixture
+        # held nanoseconds, which the server can neither store nor return.
+        "ingested_at": 1793322000111,
     }
     row.update(overrides)
     return [row[name] for name in RAW_COLUMNS]
@@ -67,6 +71,52 @@ class FakeClient:
         self.sql = sql
         self.params = params
         return self.rows
+
+
+class TypedFakeClient:
+    """A fake that answers in ClickHouse's types rather than Python's.
+
+    :class:`FakeClient` is handed a finished list of values, so it agrees with
+    the reader by construction. That is what let this bug ship: the fixture
+    gave ``ingested_at`` an ``int``, but the column is
+    ``DateTime64(3, 'UTC')`` and the server returns ``'2026-10-31
+    05:35:29.843'``. The reader called ``int()`` on it, and the pipeline
+    refused the real table at stage 12 with 32 tests still green.
+
+    This one reads the SELECT list out of the SQL and answers each expression
+    the way the server would, so removing the conversion from
+    :data:`RAW_SELECT` fails here instead of in a deployment.
+    """
+
+    #: What the server returns for each expression this module may ask for.
+    RESPONSES = {
+        "ingested_at": "2026-10-31 05:35:29.843",
+        "toUnixTimestamp64Milli(ingested_at)": 1793322000111,
+    }
+
+    def __init__(self, row: dict | None = None) -> None:
+        self.row = dict(row or {})
+        self.sql: str | None = None
+        self.params: dict | None = None
+
+    def query_rows(self, sql, *, params=None):
+        self.sql = sql
+        self.params = params
+        select = sql.split("SELECT ", 1)[1].split(" FROM ", 1)[0]
+        base = dict(zip(RAW_COLUMNS, _values()))
+        out = []
+        for expr in (part.strip() for part in select.split(",")):
+            if expr in self.RESPONSES:
+                out.append(self.RESPONSES[expr])
+            elif expr in base:
+                out.append(self.row.get(expr, base[expr]))
+            else:
+                raise AssertionError(
+                    "the reader asked for %r; this fake does not know what "
+                    "ClickHouse would answer, so the test cannot be trusted"
+                    % expr
+                )
+        return [out]
 
 
 # --------------------------------------------------------------------------
@@ -407,3 +457,41 @@ def test_every_shipped_ddl_file_splits_into_sql_only():
             head = statement.lstrip().upper()
             assert head.startswith(keywords), "%s -> %r" % (path.name, statement[:80])
     assert checked > 0
+
+
+# --------------------------------------------------------------------------
+# DateTime64 conversion (pipeline stage 12, run 20261031T091246Z)
+# --------------------------------------------------------------------------
+
+def test_the_server_converts_ingested_at_rather_than_python():
+    """The conversion belongs where the column's type and timezone are known."""
+    assert "toUnixTimestamp64Milli(ingested_at)" in RAW_SELECT
+    assert "ingested_at" not in RAW_SELECT
+    # Milli, not Nano: widening scale 3 would fabricate precision.
+    assert not any("Nano" in expr or "Micro" in expr for expr in RAW_SELECT)
+    # Every other column is still read as itself, in the pinned order.
+    assert len(RAW_SELECT) == len(RAW_COLUMNS)
+    for name, expr in zip(RAW_COLUMNS, RAW_SELECT):
+        assert name in expr
+
+
+def test_reads_a_row_from_a_server_typed_fake():
+    client = TypedFakeClient()
+    rows = load_raw_rows(client, dataset_id=DATASET)
+    assert len(rows) == 1
+    assert rows[0].ingested_at == 1793322000111
+    assert rows[0].symbol == "EURUSD"
+
+
+def test_datetime64_text_is_refused_rather_than_silently_zeroed():
+    """The failure mode this fix removes, kept as a statement of what went wrong.
+
+    If the server-side conversion is ever dropped, the reader sees text. It must
+    refuse: a ``try/except`` that fell back to ``0`` would make an unreadable
+    ingest clock look like the epoch.
+    """
+    with pytest.raises(RawSourceError, match="ingested_at is not an integer"):
+        load_raw_rows(
+            FakeClient([_values(ingested_at="2026-10-31 05:35:29.843")]),
+            dataset_id=DATASET,
+        )

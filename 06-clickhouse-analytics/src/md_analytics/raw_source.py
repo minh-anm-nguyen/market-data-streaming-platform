@@ -90,6 +90,26 @@ RAW_COLUMNS: tuple[str, ...] = (
     "ingested_at",
 )
 
+#: One SELECT expression per :data:`RAW_COLUMNS` entry, in the same order.
+#:
+#: Every column reads as itself except ``ingested_at``, which is
+#: ``DateTime64(3, 'UTC')`` and therefore arrives as formatted text --
+#: ``'2026-10-31 05:35:29.843'`` -- rather than a number. :class:`RawRow`
+#: declares it an ``int``, so something has to convert, and the server is the
+#: only party that knows the column's type and timezone: parsing that text in
+#: Python would hard-code a format ClickHouse is free to change and would
+#: guess at the unit. ``Milli`` matches the declared scale of 3 exactly;
+#: ``Nano`` would widen it and fabricate precision the column never stored.
+#:
+#: The model backend fills the same field from a monotonic counter, so the two
+#: backends do not agree on a unit. That is sound only because nothing compares
+#: or arithmetises this value -- see the note above -- and it is why this field
+#: stays out of :data:`~md_analytics.contracts.SEMANTIC_CORE_FIELDS`.
+RAW_SELECT: tuple[str, ...] = tuple(
+    "toUnixTimestamp64Milli(%s)" % name if name == "ingested_at" else name
+    for name in RAW_COLUMNS
+)
+
 #: P03's spellings for an event it forwarded. ``none`` is its clean-forward
 #: value, and the gap reasons are forwards too (its ADR-07): a discontinuity is
 #: a property of the series, not a defect in the event.
@@ -197,7 +217,7 @@ def load_raw_rows(
     sql = (
         "SELECT %s FROM %s WHERE dataset_id = {dataset_id:String} "
         "ORDER BY kafka_topic, kafka_partition, kafka_offset"
-        % (", ".join(RAW_COLUMNS), table)
+        % (", ".join(RAW_SELECT), table)
     )
     try:
         rows = client.query_rows(sql, params={"dataset_id": dataset_id})
