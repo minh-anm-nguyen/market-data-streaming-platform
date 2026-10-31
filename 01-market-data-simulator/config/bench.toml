@@ -1,0 +1,76 @@
+# Benchmark profile: record-only so the file path is measured in isolation.
+# Section 9.3 requires record-only, serve-only and both to be measured
+# separately, otherwise a bottleneck cannot be attributed.
+
+[run]
+mode = "record"
+seed = 20261030
+start_time_ns = 1793322000000000000
+duration_s = 60.0
+rate_per_sec = 10000
+quote_ratio_pct = 80
+scheduler_batch_ms = 10
+max_burst_slots = 20000
+max_scheduler_lag_ms = 5000
+on_scheduler_lag = "continue-degraded"
+bound_policy = "reflect"
+shutdown_drain_timeout_s = 60.0
+
+[symbols]
+order = ["EURUSD", "GBPUSD", "USDJPY"]
+
+[symbols.EURUSD]
+price_scale = 100000
+initial_price_ticks = 108347
+min_price_ticks = 100000
+max_price_ticks = 120000
+min_spread_ticks = 1
+max_spread_ticks = 5
+max_step_ticks = 8
+weight = 3
+
+[symbols.GBPUSD]
+price_scale = 100000
+initial_price_ticks = 126540
+min_price_ticks = 115000
+max_price_ticks = 140000
+min_spread_ticks = 1
+max_spread_ticks = 8
+max_step_ticks = 10
+weight = 2
+
+[symbols.USDJPY]
+price_scale = 1000
+initial_price_ticks = 151230
+min_price_ticks = 140000
+max_price_ticks = 165000
+min_spread_ticks = 1
+max_spread_ticks = 6
+max_step_ticks = 9
+weight = 1
+
+[output.file]
+enabled = true
+root_dir = "../runs"
+max_queue_events = 50000
+max_queue_bytes = 67108864
+fsync_every_events = 0
+fsync_every_seconds = 0
+max_record_bytes = 4096
+max_total_bytes = 107374182400
+
+[output.tcp]
+enabled = false
+host = "127.0.0.1"
+port = 9009
+max_clients = 1
+max_queue_events = 10000
+max_queue_bytes = 8388608
+send_timeout_ms = 2000
+slow_client_policy = "disconnect"
+wait_for_client = false
+startup_timeout_s = 30.0
+allow_public_bind = false
+
+[faults]
+enabled = false

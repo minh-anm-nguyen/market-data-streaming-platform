@@ -1,0 +1,8 @@
+# Generated artefacts: build catalogs, fixtures, evidence exports, reports.
+# The catalog under .artifacts/ is a local lab pointer, not a release.
+.artifacts/
+
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.hypothesis/

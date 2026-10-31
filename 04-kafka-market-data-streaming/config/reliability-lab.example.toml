@@ -1,0 +1,93 @@
+# Profile reliability-lab: 3 brokers, RF=3, minISR=2, unclean election off
+# (section 4.5, NFR-06).
+#
+# This profile is what an HA or failover claim requires. The config loader
+# refuses it with replication_factor below 3 or min_insync_replicas below 2, and
+# the topic guard refuses it on a cluster reporting fewer than 3 brokers, so a
+# single-broker run cannot accidentally produce an HA verdict.
+#
+# It has NOT been run in this lab: there is no 3-broker compose profile here
+# yet, so every case that depends on it is BLOCKED or NOT_RUN in
+# tests/expected/what_if_verdicts.yaml rather than claimed.
+#
+# Section 2.2 caveat that still applies even once it does run: three brokers on
+# one host share a disk and a kernel. That tests leader election and ISR
+# behaviour, and it does not test failure-domain independence. Do not read a
+# pass here as availability evidence for a real deployment.
+
+[run]
+run_id = "p04-lab-001"
+mode = "offline_verified_publish"
+source_run_dir = "../01-market-data-simulator/runs/p04-smoke"
+proto_descriptor_sha256 = ""
+expected_source_schema = "sim.v1"
+allow_fault_test_into_market_topics = false
+single_active_dataset = true
+output_dir = "runs"
+max_events = 0
+target_events_per_second = 0
+duplicate_every_event = false
+
+[kafka]
+# All three brokers, so the client is not dependent on one of them being the
+# bootstrap host while that is exactly the one a chaos test kills.
+bootstrap_servers = "127.0.0.1:9092,127.0.0.1:9094,127.0.0.1:9096"
+security_protocol = "PLAINTEXT"
+client_id = "p04-publisher-lab"
+profile = "reliability-lab"
+ticks_topic = "md.ticks.v1"
+quotes_topic = "md.quotes.v1"
+anomaly_topic = ""
+expected_partitions_per_topic = 8
+expected_replication_factor = 3
+expected_min_insync_replicas = 2
+expected_cleanup_policy = "delete"
+expected_unclean_leader_election = false
+partitioner = "murmur2_random"
+allow_auto_topic_create = false
+partition_golden_path = "config/topic-partition-golden.json"
+
+[producer]
+enable_idempotence = true
+acks = "all"
+max_in_flight_requests_per_connection = 5
+retries = 2147483647
+# Longer than local-dev: a leader election takes time, and a timeout shorter
+# than the election turns a recoverable failover into a run full of UNKNOWN
+# outcomes that prove nothing about durability.
+message_timeout_ms = 60000
+linger_ms = 5
+batch_size_bytes = 65536
+compression_type = "lz4"
+queue_buffering_max_messages = 100000
+queue_buffering_max_kbytes = 65536
+poll_interval_ms = 10
+
+[handoff]
+max_records = 4096
+max_bytes = 8388608
+high_watermark_percent = 80
+low_watermark_percent = 40
+# Longer than local-dev for the same reason as message_timeout_ms: the queue is
+# expected to back up during an election, and declaring INCOMPLETE after 5 s
+# would report a failure where a recovery was in progress.
+stall_timeout_ms = 15000
+
+[contract]
+max_kafka_value_bytes = 4096
+max_key_bytes = 32
+max_headers_total_bytes = 512
+max_active_symbols = 256
+max_active_datasets = 4
+
+[shutdown]
+drain_deadline_ms = 30000
+stop_on_contract_mismatch = true
+
+[verifier]
+mode = "snapshot"
+auto_commit = false
+auto_offset_store = false
+start_policy = "explicit_captured_begin_offsets"
+stop_policy = "explicit_captured_end_offsets"
+strict_semantic_equality = true

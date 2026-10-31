@@ -1,0 +1,25 @@
+# Fault plan: deterministic, addressed by (symbol, sequence) or global_slot_index,
+# never by wall-clock time. Each entry is audited into fault-manifest.jsonl, which
+# is kept OUT of the event payload so a downstream adapter has to detect the
+# anomaly itself rather than read the answer key.
+
+[[fault]]
+kind = "missing_sequence"
+symbol = "EURUSD"
+sequence = 100
+
+[[fault]]
+kind = "duplicate_exact"
+symbol = "GBPUSD"
+sequence = 200
+
+[[fault]]
+kind = "stale_timestamp"
+symbol = "USDJPY"
+sequence = 300
+offset_ms = 2000
+
+[[fault]]
+kind = "reorder_adjacent"
+symbol = "EURUSD"
+sequence = 401

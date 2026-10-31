@@ -1,0 +1,4418 @@
+{
+  "cases": [
+    {
+      "case_id": "P07-G01-01",
+      "expected_safe_behavior": "Quarantine partial; không mở cut",
+      "group": "G01",
+      "group_title": "Source manifest, dataset seal & provenance",
+      "independent_evidence": "File list + seal receipt + refusal reason",
+      "priority": "P0",
+      "what_if": "P01 chết giữa lúc ghi JSONL, còn `.part`"
+    },
+    {
+      "case_id": "P07-G01-02",
+      "expected_safe_behavior": "Reject source before Kafka",
+      "group": "G01",
+      "group_title": "Source manifest, dataset seal & provenance",
+      "independent_evidence": "Count+sha check independent",
+      "priority": "P0",
+      "what_if": "Manifest ghi 100k nhưng JSONL chỉ 99,999 events"
+    },
+    {
+      "case_id": "P07-G01-03",
+      "expected_safe_behavior": "Phát hiện nếu trust anchor bên ngoài khác; nếu không, INCONCLUSIVE",
+      "group": "G01",
+      "group_title": "Source manifest, dataset seal & provenance",
+      "independent_evidence": "External pinned digest/anchor",
+      "priority": "P0",
+      "what_if": "Manifest hash đúng nhưng file JSONL đã bị thay và manifest cũng bị sửa"
+    },
+    {
+      "case_id": "P07-G01-04",
+      "expected_safe_behavior": "CONFLICT/NO-GO, không trộn nguồn",
+      "group": "G01",
+      "group_title": "Source manifest, dataset seal & provenance",
+      "independent_evidence": "Source semantic digest inventory",
+      "priority": "P0",
+      "what_if": "`dataset_id` trùng giữa hai source fixtures khác semantic contents"
+    },
+    {
+      "case_id": "P07-G01-05",
+      "expected_safe_behavior": "Reject untracked duplicate/identity conflict",
+      "group": "G01",
+      "group_title": "Source manifest, dataset seal & provenance",
+      "independent_evidence": "Per-ID independent diff",
+      "priority": "P1",
+      "what_if": "Source chứa event duplicate nhưng fault manifest không khai báo"
+    },
+    {
+      "case_id": "P07-G01-06",
+      "expected_safe_behavior": "INVALID fixture; không suy transport loss",
+      "group": "G01",
+      "group_title": "Source manifest, dataset seal & provenance",
+      "independent_evidence": "Logical slots vs fault manifest",
+      "priority": "P1",
+      "what_if": "Fault manifest khai báo intentional omission nhưng source thực tế vẫn có event"
+    },
+    {
+      "case_id": "P07-G01-07",
+      "expected_safe_behavior": "Expected accepted loại event đó",
+      "group": "G01",
+      "group_title": "Source manifest, dataset seal & provenance",
+      "independent_evidence": "Independent policy classification",
+      "priority": "P1",
+      "what_if": "Source có event sai giá và strict P03 phải reject"
+    },
+    {
+      "case_id": "P07-G01-08",
+      "expected_safe_behavior": "Nếu Kafka cut còn đầy đủ thì reconcile được; mất cả hai → INCONCLUSIVE",
+      "group": "G01",
+      "group_title": "Source manifest, dataset seal & provenance",
+      "independent_evidence": "Kafka full scan + source availability note",
+      "priority": "P1",
+      "what_if": "Source bị xóa sau P04 ACK nhưng trước build"
+    },
+    {
+      "case_id": "P07-G01-09",
+      "expected_safe_behavior": "Preflight fail",
+      "group": "G01",
+      "group_title": "Source manifest, dataset seal & provenance",
+      "independent_evidence": "Per-symbol expected counts",
+      "priority": "P1",
+      "what_if": "Một symbol không có event nhưng manifest bảo có"
+    },
+    {
+      "case_id": "P07-G01-10",
+      "expected_safe_behavior": "Identity conflict, không dựng canonical",
+      "group": "G01",
+      "group_title": "Source manifest, dataset seal & provenance",
+      "independent_evidence": "`(dataset,symbol,sequence)` projected comparison",
+      "priority": "P1",
+      "what_if": "Cùng source có tick/quote lặp sequence nhưng khác event kind"
+    },
+    {
+      "case_id": "P07-G01-11",
+      "expected_safe_behavior": "Fail validation, không silently shift ns",
+      "group": "G01",
+      "group_title": "Source manifest, dataset seal & provenance",
+      "independent_evidence": "UTC/epoch field equality",
+      "priority": "P1",
+      "what_if": "Manifest dùng timezone local thay UTC"
+    },
+    {
+      "case_id": "P07-G01-12",
+      "expected_safe_behavior": "Reject skew until migration explicitly verified",
+      "group": "G01",
+      "group_title": "Source manifest, dataset seal & provenance",
+      "independent_evidence": "Schema/config hashes",
+      "priority": "P1",
+      "what_if": "Dataset version P01 đổi mà source manifest ghi version cũ"
+    },
+    {
+      "case_id": "P07-G01-13",
+      "expected_safe_behavior": "Stop early, evidence incomplete ⇒ INCONCLUSIVE",
+      "group": "G01",
+      "group_title": "Source manifest, dataset seal & provenance",
+      "independent_evidence": "Disk quota + missing artifact detection",
+      "priority": "P2",
+      "what_if": "Artifact store đầy khi chụp source"
+    },
+    {
+      "case_id": "P07-G01-14",
+      "expected_safe_behavior": "Mark not reproducible; prevent deterministic claim",
+      "group": "G01",
+      "group_title": "Source manifest, dataset seal & provenance",
+      "independent_evidence": "Required metadata schema check",
+      "priority": "P2",
+      "what_if": "Manifest không chứa fault-plan hash nhưng run được gọi fault replay"
+    },
+    {
+      "case_id": "P07-G02-01",
+      "expected_safe_behavior": "Source-bitwise regression FAIL",
+      "group": "G02",
+      "group_title": "Replay seeds, logical time & reproducibility",
+      "independent_evidence": "2 run sha256 comparison",
+      "priority": "P0",
+      "what_if": "Cùng seed/config/t0 và pinned image nhưng JSONL đổi bytes"
+    },
+    {
+      "case_id": "P07-G02-02",
+      "expected_safe_behavior": "Reject identity/run collision",
+      "group": "G02",
+      "group_title": "Replay seeds, logical time & reproducibility",
+      "independent_evidence": "Source identity proof",
+      "priority": "P0",
+      "what_if": "Đổi seed nhưng run_id/dataset_id không được phân biệt"
+    },
+    {
+      "case_id": "P07-G02-03",
+      "expected_safe_behavior": "Semantic replay PASS nếu field parity; không dùng byte hash",
+      "group": "G02",
+      "group_title": "Replay seeds, logical time & reproducibility",
+      "independent_evidence": "Golden semantic oracle",
+      "priority": "P0",
+      "what_if": "Cùng semantic event nhưng Python Protobuf serialization bytes khác C++"
+    },
+    {
+      "case_id": "P07-G02-04",
+      "expected_safe_behavior": "Source order violation FAIL",
+      "group": "G02",
+      "group_title": "Replay seeds, logical time & reproducibility",
+      "independent_evidence": "Source sequence per symbol",
+      "priority": "P0",
+      "what_if": "Replay 10x làm output khác thứ tự symbol trong raw fixture"
+    },
+    {
+      "case_id": "P07-G02-05",
+      "expected_safe_behavior": "`event_time_ns` giữ nguyên; scheduler elapsed được phép khác",
+      "group": "G02",
+      "group_title": "Replay seeds, logical time & reproducibility",
+      "independent_evidence": "Semantic diff",
+      "priority": "P1",
+      "what_if": "Phát lại nguồn ở wall clock khác"
+    },
+    {
+      "case_id": "P07-G02-06",
+      "expected_safe_behavior": "No silent gap or duplicate unexplained",
+      "group": "G02",
+      "group_title": "Replay seeds, logical time & reproducibility",
+      "independent_evidence": "Resume boundary + per-ID set",
+      "priority": "P1",
+      "what_if": "Retry partial replay từ checkpoint ở giữa một symbol"
+    },
+    {
+      "case_id": "P07-G02-07",
+      "expected_safe_behavior": "Semantic set same; jitter/throughput khác được ghi",
+      "group": "G02",
+      "group_title": "Replay seeds, logical time & reproducibility",
+      "independent_evidence": "Cross-host semantic inventory",
+      "priority": "P1",
+      "what_if": "Replay qua 2 machine CPU khác nhau"
+    },
+    {
+      "case_id": "P07-G02-08",
+      "expected_safe_behavior": "Fail reproducibility proof",
+      "group": "G02",
+      "group_title": "Replay seeds, logical time & reproducibility",
+      "independent_evidence": "Re-run same seed, compare fault IDs",
+      "priority": "P1",
+      "what_if": "Fault-plan bằng random seeded nhưng một module dùng global RNG khác"
+    },
+    {
+      "case_id": "P07-G02-09",
+      "expected_safe_behavior": "Không cross-dataset state bleed",
+      "group": "G02",
+      "group_title": "Replay seeds, logical time & reproducibility",
+      "independent_evidence": "Per-dataset sequence/digest diff",
+      "priority": "P1",
+      "what_if": "Replay nhiều dataset trong một process"
+    },
+    {
+      "case_id": "P07-G02-10",
+      "expected_safe_behavior": "Quarantine/explicit retry policy",
+      "group": "G02",
+      "group_title": "Replay seeds, logical time & reproducibility",
+      "independent_evidence": "Generation/run manifest",
+      "priority": "P1",
+      "what_if": "Replay cùng dataset với new run_id vào topic generation cũ"
+    },
+    {
+      "case_id": "P07-G02-11",
+      "expected_safe_behavior": "Logical clock preserve, không tự thêm timestamps",
+      "group": "G02",
+      "group_title": "Replay seeds, logical time & reproducibility",
+      "independent_evidence": "Event_time sequence proof",
+      "priority": "P1",
+      "what_if": "Stop rồi resume scheduler sau long pause"
+    },
+    {
+      "case_id": "P07-G02-12",
+      "expected_safe_behavior": "Deterministic anomaly, P03 policy xử lý nhất quán",
+      "group": "G02",
+      "group_title": "Replay seeds, logical time & reproducibility",
+      "independent_evidence": "Policy oracle diff",
+      "priority": "P1",
+      "what_if": "Event-time đi ngược với source sequence theo fault plan"
+    },
+    {
+      "case_id": "P07-G02-13",
+      "expected_safe_behavior": "Bounded timers/resources; no premature success",
+      "group": "G02",
+      "group_title": "Replay seeds, logical time & reproducibility",
+      "independent_evidence": "Duration and memory evidence",
+      "priority": "P2",
+      "what_if": "Replay factor cực nhỏ 0.01x"
+    },
+    {
+      "case_id": "P07-G02-14",
+      "expected_safe_behavior": "Resource-limited backpressure + honest offered/achieved rate",
+      "group": "G02",
+      "group_title": "Replay seeds, logical time & reproducibility",
+      "independent_evidence": "Queue/resource trends",
+      "priority": "P2",
+      "what_if": "Replay factor 1000x vượt CPU"
+    },
+    {
+      "case_id": "P07-G03-01",
+      "expected_safe_behavior": "Không coi như cùng semantic core; reject invalid presence",
+      "group": "G03",
+      "group_title": "Protobuf, presence, schema skew & semantic digest",
+      "independent_evidence": "Cross-language has-field checks",
+      "priority": "P0",
+      "what_if": "Tick `price_ticks=0` hiện diện vs field absent"
+    },
+    {
+      "case_id": "P07-G03-02",
+      "expected_safe_behavior": "Reject business-invalid, không nhập ClickHouse",
+      "group": "G03",
+      "group_title": "Protobuf, presence, schema skew & semantic digest",
+      "independent_evidence": "C++/Python decoder presence parity",
+      "priority": "P0",
+      "what_if": "Quote thiếu `ask_ticks` nhưng default 0"
+    },
+    {
+      "case_id": "P07-G03-03",
+      "expected_safe_behavior": "Chỉ cho phép evolution qua compatibility matrix",
+      "group": "G03",
+      "group_title": "Protobuf, presence, schema skew & semantic digest",
+      "independent_evidence": "Descriptor hash + golden fixtures",
+      "priority": "P0",
+      "what_if": "C++ encoder schema v1, Python decoder v1.1"
+    },
+    {
+      "case_id": "P07-G03-04",
+      "expected_safe_behavior": "Không dựa protobuf bytes/digest để so equality",
+      "group": "G03",
+      "group_title": "Protobuf, presence, schema skew & semantic digest",
+      "independent_evidence": "`P05-CORE-V1` compare",
+      "priority": "P0",
+      "what_if": "Unknown field bị giữ ở C++ nhưng bỏ khi Python re-encode"
+    },
+    {
+      "case_id": "P07-G03-05",
+      "expected_safe_behavior": "Quarantine/reject, không commit accepted event",
+      "group": "G03",
+      "group_title": "Protobuf, presence, schema skew & semantic digest",
+      "independent_evidence": "Decode error + no downstream ID",
+      "priority": "P1",
+      "what_if": "Frame chứa truncated Protobuf"
+    },
+    {
+      "case_id": "P07-G03-06",
+      "expected_safe_behavior": "Parser policy kiểm last-oneof rồi strict validation; test explicit",
+      "group": "G03",
+      "group_title": "Protobuf, presence, schema skew & semantic digest",
+      "independent_evidence": "Typed schema-parse result parity",
+      "priority": "P1",
+      "what_if": "Payload chứa oneof tick và quote bytes cạnh tranh"
+    },
+    {
+      "case_id": "P07-G03-07",
+      "expected_safe_behavior": "Reject, không overflow trong conversion",
+      "group": "G03",
+      "group_title": "Protobuf, presence, schema skew & semantic digest",
+      "independent_evidence": "Boundary fixture + CH absence",
+      "priority": "P1",
+      "what_if": "`int64 event_time_ns` vượt phạm vi policy timestamp"
+    },
+    {
+      "case_id": "P07-G03-08",
+      "expected_safe_behavior": "Reject before sink",
+      "group": "G03",
+      "group_title": "Protobuf, presence, schema skew & semantic digest",
+      "independent_evidence": "Strict oracle and actual P03/P05 errors",
+      "priority": "P1",
+      "what_if": "`price_scale=0` hoặc -1"
+    },
+    {
+      "case_id": "P07-G03-09",
+      "expected_safe_behavior": "FAIL, no canonical publication",
+      "group": "G03",
+      "group_title": "Protobuf, presence, schema skew & semantic digest",
+      "independent_evidence": "Golden digest comparison",
+      "priority": "P1",
+      "what_if": "C++/Python endian canonical digest khác nhau"
+    },
+    {
+      "case_id": "P07-G03-10",
+      "expected_safe_behavior": "Detect conflict, not identical logical core",
+      "group": "G03",
+      "group_title": "Protobuf, presence, schema skew & semantic digest",
+      "independent_evidence": "independent field projection",
+      "priority": "P1",
+      "what_if": "Semantic digest same ID nhưng khác optional presence bits"
+    },
+    {
+      "case_id": "P07-G03-11",
+      "expected_safe_behavior": "Block release/rollback",
+      "group": "G03",
+      "group_title": "Protobuf, presence, schema skew & semantic digest",
+      "independent_evidence": "Descriptor compatibility CI",
+      "priority": "P1",
+      "what_if": "Protobuf schema tag đổi kiểu không compatible"
+    },
+    {
+      "case_id": "P07-G03-12",
+      "expected_safe_behavior": "Reject topic value, no false parse accepted",
+      "group": "G03",
+      "group_title": "Protobuf, presence, schema skew & semantic digest",
+      "independent_evidence": "Raw Kafka decode verifier",
+      "priority": "P1",
+      "what_if": "Encoded Kafka value chứa MDP1 TCP prefix"
+    },
+    {
+      "case_id": "P07-G03-13",
+      "expected_safe_behavior": "Bounded reject and memory cap",
+      "group": "G03",
+      "group_title": "Protobuf, presence, schema skew & semantic digest",
+      "independent_evidence": "Parser/CPU/RSS trace",
+      "priority": "P2",
+      "what_if": "Deeply nested/oversize crafted payload"
+    },
+    {
+      "case_id": "P07-G03-14",
+      "expected_safe_behavior": "Policy flags version-skew; no stable Protobuf hash claim",
+      "group": "G03",
+      "group_title": "Protobuf, presence, schema skew & semantic digest",
+      "independent_evidence": "Descriptor/presence and unknown-field report",
+      "priority": "P2",
+      "what_if": "Cùng known semantic fields nhưng unknown fields khác"
+    },
+    {
+      "case_id": "P07-G04-01",
+      "expected_safe_behavior": "Framer ghép đúng, không mất event",
+      "group": "G04",
+      "group_title": "TCP segmentation, framing & stream replay",
+      "independent_evidence": "Wire fixture vs decoded semantic set",
+      "priority": "P0",
+      "what_if": "TCP gửi length header thành 4 đoạn 1 byte"
+    },
+    {
+      "case_id": "P07-G04-02",
+      "expected_safe_behavior": "Reject truncated frame; không output partial event",
+      "group": "G04",
+      "group_title": "TCP segmentation, framing & stream replay",
+      "independent_evidence": "Frame-level error and source diff",
+      "priority": "P0",
+      "what_if": "Socket close khi payload còn thiếu 1 byte"
+    },
+    {
+      "case_id": "P07-G04-03",
+      "expected_safe_behavior": "Reject before allocation per P03 cap",
+      "group": "G04",
+      "group_title": "TCP segmentation, framing & stream replay",
+      "independent_evidence": "Peak RSS and reject receipt",
+      "priority": "P0",
+      "what_if": "Length prefix quảng cáo 4 GiB"
+    },
+    {
+      "case_id": "P07-G04-04",
+      "expected_safe_behavior": "Fail closed; không resync tùy tiện",
+      "group": "G04",
+      "group_title": "TCP segmentation, framing & stream replay",
+      "independent_evidence": "Decoder state trace",
+      "priority": "P0",
+      "what_if": "Header MDP1 sai magic/version"
+    },
+    {
+      "case_id": "P07-G04-05",
+      "expected_safe_behavior": "Decode cả hai đúng một lần",
+      "group": "G04",
+      "group_title": "TCP segmentation, framing & stream replay",
+      "independent_evidence": "Event ID cardinality",
+      "priority": "P1",
+      "what_if": "Hai frames dính chung một read()"
+    },
+    {
+      "case_id": "P07-G04-06",
+      "expected_safe_behavior": "Decode đúng một lần, bounded buffer",
+      "group": "G04",
+      "group_title": "TCP segmentation, framing & stream replay",
+      "independent_evidence": "Byte-level harness",
+      "priority": "P1",
+      "what_if": "Một frame split thành 100 reads"
+    },
+    {
+      "case_id": "P07-G04-07",
+      "expected_safe_behavior": "P03 classification theo source ID, no hidden double publish",
+      "group": "G04",
+      "group_title": "TCP segmentation, framing & stream replay",
+      "independent_evidence": "P03/Kafka logical diff",
+      "priority": "P1",
+      "what_if": "TCP duplicate application frame sau reconnect"
+    },
+    {
+      "case_id": "P07-G04-08",
+      "expected_safe_behavior": "Recovery có source replay và scan; else unknown",
+      "group": "G04",
+      "group_title": "TCP segmentation, framing & stream replay",
+      "independent_evidence": "P03 acceptance vs Kafka cut",
+      "priority": "P1",
+      "what_if": "TCP reconnect sau P03 accepted nhưng P04 chưa enqueue"
+    },
+    {
+      "case_id": "P07-G04-09",
+      "expected_safe_behavior": "Bounded queue/backpressure; explicit loss if selected policy",
+      "group": "G04",
+      "group_title": "TCP segmentation, framing & stream replay",
+      "independent_evidence": "Queue bytes and result",
+      "priority": "P1",
+      "what_if": "Slow reader làm P01 TCP queue đầy"
+    },
+    {
+      "case_id": "P07-G04-10",
+      "expected_safe_behavior": "Không coi delivered downstream",
+      "group": "G04",
+      "group_title": "TCP segmentation, framing & stream replay",
+      "independent_evidence": "Receiver+Kafka proof absent",
+      "priority": "P1",
+      "what_if": "`send()` trả success nhưng receiver crash"
+    },
+    {
+      "case_id": "P07-G04-11",
+      "expected_safe_behavior": "Timeout, bounded connection budget",
+      "group": "G04",
+      "group_title": "TCP segmentation, framing & stream replay",
+      "independent_evidence": "FD/time trace",
+      "priority": "P1",
+      "what_if": "Client kết nối nửa vời không gửi header"
+    },
+    {
+      "case_id": "P07-G04-12",
+      "expected_safe_behavior": "No synthetic market event accepted",
+      "group": "G04",
+      "group_title": "TCP segmentation, framing & stream replay",
+      "independent_evidence": "Full stream negative fixtures",
+      "priority": "P1",
+      "what_if": "Malicious frame làm parser resynchronization ra event giả"
+    },
+    {
+      "case_id": "P07-G04-13",
+      "expected_safe_behavior": "Connection generation reset isolation",
+      "group": "G04",
+      "group_title": "TCP segmentation, framing & stream replay",
+      "independent_evidence": "Session IDs and event-set diff",
+      "priority": "P2",
+      "what_if": "TCP fd bị tái sử dụng sau reconnect"
+    },
+    {
+      "case_id": "P07-G04-14",
+      "expected_safe_behavior": "No false accepted event",
+      "group": "G04",
+      "group_title": "TCP segmentation, framing & stream replay",
+      "independent_evidence": "Stage/handshake log + Kafka scan",
+      "priority": "P2",
+      "what_if": "Restart P03 giữa handshake và first frame"
+    },
+    {
+      "case_id": "P07-G05-01",
+      "expected_safe_behavior": "Gap flagged, expected publish follows explicit policy",
+      "group": "G05",
+      "group_title": "P03 sequence tracker, acceptance policy & gaps",
+      "independent_evidence": "Reference policy vs P03/Kafka",
+      "priority": "P0",
+      "what_if": "Source per-symbol sequence 1,2,4 có intentional 3 omission"
+    },
+    {
+      "case_id": "P07-G05-02",
+      "expected_safe_behavior": "Duplicate suppressed or test-lane per policy",
+      "group": "G05",
+      "group_title": "P03 sequence tracker, acceptance policy & gaps",
+      "independent_evidence": "Expected accepted vs Kafka ID multiset",
+      "priority": "P0",
+      "what_if": "Source 1,2,2 cùng digest"
+    },
+    {
+      "case_id": "P07-G05-03",
+      "expected_safe_behavior": "Conflict/reject, no silent overwrite",
+      "group": "G05",
+      "group_title": "P03 sequence tracker, acceptance policy & gaps",
+      "independent_evidence": "Full semantic diff",
+      "priority": "P0",
+      "what_if": "Source same sequence but different tick prices"
+    },
+    {
+      "case_id": "P07-G05-04",
+      "expected_safe_behavior": "FAIL upstream policy, no READY",
+      "group": "G05",
+      "group_title": "P03 sequence tracker, acceptance policy & gaps",
+      "independent_evidence": "Independent acceptance oracle",
+      "priority": "P0",
+      "what_if": "P03 accepts malformed price despite strict rule"
+    },
+    {
+      "case_id": "P07-G05-05",
+      "expected_safe_behavior": "Không gọi Kafka tick-only gap là transport loss",
+      "group": "G05",
+      "group_title": "P03 sequence tracker, acceptance policy & gaps",
+      "independent_evidence": "Cross-topic merged source sequence",
+      "priority": "P1",
+      "what_if": "Tick/quote share one sequence counter; tick-only view 1,3,5"
+    },
+    {
+      "case_id": "P07-G05-06",
+      "expected_safe_behavior": "Không dedupe chéo symbol",
+      "group": "G05",
+      "group_title": "P03 sequence tracker, acceptance policy & gaps",
+      "independent_evidence": "Identity tuple exact",
+      "priority": "P1",
+      "what_if": "Two symbols both have sequence 1"
+    },
+    {
+      "case_id": "P07-G05-07",
+      "expected_safe_behavior": "Không dedupe chéo dataset",
+      "group": "G05",
+      "group_title": "P03 sequence tracker, acceptance policy & gaps",
+      "independent_evidence": "Dataset scoped scans",
+      "priority": "P1",
+      "what_if": "Two datasets both have EURUSD seq 1"
+    },
+    {
+      "case_id": "P07-G05-08",
+      "expected_safe_behavior": "Log late/reorder and policy correctly",
+      "group": "G05",
+      "group_title": "P03 sequence tracker, acceptance policy & gaps",
+      "independent_evidence": "Oracle classification trace",
+      "priority": "P1",
+      "what_if": "Sequence reordered within bounded late window"
+    },
+    {
+      "case_id": "P07-G05-09",
+      "expected_safe_behavior": "Controlled boundary failure, no wrap into negative",
+      "group": "G05",
+      "group_title": "P03 sequence tracker, acceptance policy & gaps",
+      "independent_evidence": "Input/decoded invariants",
+      "priority": "P1",
+      "what_if": "Sequence very near Int64 max"
+    },
+    {
+      "case_id": "P07-G05-10",
+      "expected_safe_behavior": "Detect invalid reset/conflict",
+      "group": "G05",
+      "group_title": "P03 sequence tracker, acceptance policy & gaps",
+      "independent_evidence": "Per-symbol monotonic oracle",
+      "priority": "P1",
+      "what_if": "Sequence resets after P01 restart but same dataset_id"
+    },
+    {
+      "case_id": "P07-G05-11",
+      "expected_safe_behavior": "Incomplete stream flagged per expected fault",
+      "group": "G05",
+      "group_title": "P03 sequence tracker, acceptance policy & gaps",
+      "independent_evidence": "Expected slots / observed trace",
+      "priority": "P1",
+      "what_if": "One sequence gap only noticed at end of finite dataset"
+    },
+    {
+      "case_id": "P07-G05-12",
+      "expected_safe_behavior": "Reject no implicit default value",
+      "group": "G05",
+      "group_title": "P03 sequence tracker, acceptance policy & gaps",
+      "independent_evidence": "Presence/sequence check",
+      "priority": "P1",
+      "what_if": "Sequence 0/missing optional field"
+    },
+    {
+      "case_id": "P07-G05-13",
+      "expected_safe_behavior": "Invalidate expected-set proof or split versioned cut",
+      "group": "G05",
+      "group_title": "P03 sequence tracker, acceptance policy & gaps",
+      "independent_evidence": "Policy hash in run ledger",
+      "priority": "P2",
+      "what_if": "P03 policy version changed mid-replay"
+    },
+    {
+      "case_id": "P07-G05-14",
+      "expected_safe_behavior": "Bounded window with explicit unresolved gap counter",
+      "group": "G05",
+      "group_title": "P03 sequence tracker, acceptance policy & gaps",
+      "independent_evidence": "Soak RSS and gap summary",
+      "priority": "P2",
+      "what_if": "P03 tracks gap indefinitely and memory increases"
+    },
+    {
+      "case_id": "P07-G06-01",
+      "expected_safe_behavior": "Classify event-time stale correctly",
+      "group": "G06",
+      "group_title": "Stale quotes, event time & feed inactivity",
+      "independent_evidence": "Clock policy + event timestamps",
+      "priority": "P0",
+      "what_if": "Quote timestamp stale 10s nhưng source arrival mới"
+    },
+    {
+      "case_id": "P07-G06-02",
+      "expected_safe_behavior": "Feed inactivity separate from stale",
+      "group": "G06",
+      "group_title": "Stale quotes, event time & feed inactivity",
+      "independent_evidence": "Heartbeat vs payload trace",
+      "priority": "P0",
+      "what_if": "No quote arrives 10s but last event-time was fresh"
+    },
+    {
+      "case_id": "P07-G06-03",
+      "expected_safe_behavior": "Logical monotonic durations, no false success",
+      "group": "G06",
+      "group_title": "Stale quotes, event time & feed inactivity",
+      "independent_evidence": "Clock skew injection receipt",
+      "priority": "P0",
+      "what_if": "NTP clock jumps backward on harness host"
+    },
+    {
+      "case_id": "P07-G06-04",
+      "expected_safe_behavior": "Fail semantic equality / reject conversion",
+      "group": "G06",
+      "group_title": "Stale quotes, event time & feed inactivity",
+      "independent_evidence": "Int64 ns field-by-field",
+      "priority": "P0",
+      "what_if": "Event timestamp 1ns difference lost in cast ms"
+    },
+    {
+      "case_id": "P07-G06-05",
+      "expected_safe_behavior": "Correct UTC event date and bar boundary",
+      "group": "G06",
+      "group_title": "Stale quotes, event time & feed inactivity",
+      "independent_evidence": "Calendar fixture",
+      "priority": "P1",
+      "what_if": "Cross-midnight UTC event with local +07 host"
+    },
+    {
+      "case_id": "P07-G06-06",
+      "expected_safe_behavior": "Reject/flag per policy",
+      "group": "G06",
+      "group_title": "Stale quotes, event time & feed inactivity",
+      "independent_evidence": "Independent time oracle",
+      "priority": "P1",
+      "what_if": "Future-dated timestamp > configured skew"
+    },
+    {
+      "case_id": "P07-G06-07",
+      "expected_safe_behavior": "Log policy effect; no forced ascending time rewrite",
+      "group": "G06",
+      "group_title": "Stale quotes, event time & feed inactivity",
+      "independent_evidence": "Source field equality",
+      "priority": "P1",
+      "what_if": "Out-of-order event-time but increasing source sequence"
+    },
+    {
+      "case_id": "P07-G06-08",
+      "expected_safe_behavior": "New cut/rebuild if admitted; READY unchanged",
+      "group": "G06",
+      "group_title": "Stale quotes, event time & feed inactivity",
+      "independent_evidence": "Build/pointer audit",
+      "priority": "P1",
+      "what_if": "Late quote arrives after snapshot sealed"
+    },
+    {
+      "case_id": "P07-G06-09",
+      "expected_safe_behavior": "Both flags retained; reason not overwritten",
+      "group": "G06",
+      "group_title": "Stale quotes, event time & feed inactivity",
+      "independent_evidence": "Multi-anomaly verdict",
+      "priority": "P1",
+      "what_if": "Stale quote and sequence gap occur together"
+    },
+    {
+      "case_id": "P07-G06-10",
+      "expected_safe_behavior": "Separate source vs downstream inactivity",
+      "group": "G06",
+      "group_title": "Stale quotes, event time & feed inactivity",
+      "independent_evidence": "Stage timestamps+health",
+      "priority": "P1",
+      "what_if": "Feed silence caused by Kafka broker outage, not P01"
+    },
+    {
+      "case_id": "P07-G06-11",
+      "expected_safe_behavior": "No drift of event_time; proper timeout/cancel",
+      "group": "G06",
+      "group_title": "Stale quotes, event time & feed inactivity",
+      "independent_evidence": "Deadline/journal trace",
+      "priority": "P1",
+      "what_if": "Large wall-time timeouts while logical replay paused"
+    },
+    {
+      "case_id": "P07-G06-12",
+      "expected_safe_behavior": "Fail range preflight, no overflow",
+      "group": "G06",
+      "group_title": "Stale quotes, event time & feed inactivity",
+      "independent_evidence": "Edge fixture and CH rejection",
+      "priority": "P1",
+      "what_if": "Timestamp near Int64 ns limit"
+    },
+    {
+      "case_id": "P07-G06-13",
+      "expected_safe_behavior": "Reject or documented normalization, never silent timezone change",
+      "group": "G06",
+      "group_title": "Stale quotes, event time & feed inactivity",
+      "independent_evidence": "Source config validation",
+      "priority": "P2",
+      "what_if": "Leap-second string in P01 config not understood"
+    },
+    {
+      "case_id": "P07-G06-14",
+      "expected_safe_behavior": "OHLC tie-break `(time_ns,seq)` deterministic",
+      "group": "G06",
+      "group_title": "Stale quotes, event time & feed inactivity",
+      "independent_evidence": "Reference bar diff",
+      "priority": "P2",
+      "what_if": "Two ticks same `event_time_ns` different sequence"
+    },
+    {
+      "case_id": "P07-G07-01",
+      "expected_safe_behavior": "Unknown publish status; scan Kafka cut",
+      "group": "G07",
+      "group_title": "C++ Kafka producer enqueue, ACK & retry ambiguity",
+      "independent_evidence": "Kafka independent record scan",
+      "priority": "P0",
+      "what_if": "Producer enqueue succeeds, process SIGKILL before delivery callback"
+    },
+    {
+      "case_id": "P07-G07-02",
+      "expected_safe_behavior": "No `timeout=not written`; classify duplicate on retry",
+      "group": "G07",
+      "group_title": "C++ Kafka producer enqueue, ACK & retry ambiguity",
+      "independent_evidence": "Broker log + attempt ID",
+      "priority": "P0",
+      "what_if": "Broker writes record but response lost"
+    },
+    {
+      "case_id": "P07-G07-03",
+      "expected_safe_behavior": "Physical duplicate allowed, logical canonical unique",
+      "group": "G07",
+      "group_title": "C++ Kafka producer enqueue, ACK & retry ambiguity",
+      "independent_evidence": "Kafka multisets + P06 proof",
+      "priority": "P0",
+      "what_if": "Idempotent producer restarted with new PID and re-publishes same source"
+    },
+    {
+      "case_id": "P07-G07-04",
+      "expected_safe_behavior": "No full pipeline PASS",
+      "group": "G07",
+      "group_title": "C++ Kafka producer enqueue, ACK & retry ambiguity",
+      "independent_evidence": "Source seal + cut mismatch",
+      "priority": "P0",
+      "what_if": "Delivery callback success but disk/source manifest unsealed"
+    },
+    {
+      "case_id": "P07-G07-05",
+      "expected_safe_behavior": "Per-record delivery ledger correct; no callback order assumption",
+      "group": "G07",
+      "group_title": "C++ Kafka producer enqueue, ACK & retry ambiguity",
+      "independent_evidence": "Correlated IDs/attempts",
+      "priority": "P1",
+      "what_if": "Out-of-order callbacks within producer queue"
+    },
+    {
+      "case_id": "P07-G07-06",
+      "expected_safe_behavior": "Bounded rejection/backpressure; not silent drop",
+      "group": "G07",
+      "group_title": "C++ Kafka producer enqueue, ACK & retry ambiguity",
+      "independent_evidence": "Queue and produced vs ACKed",
+      "priority": "P1",
+      "what_if": "Queue full on sustained burst"
+    },
+    {
+      "case_id": "P07-G07-07",
+      "expected_safe_behavior": "Preflight NO-GO (must pin acks/all/ISR profile)",
+      "group": "G07",
+      "group_title": "C++ Kafka producer enqueue, ACK & retry ambiguity",
+      "independent_evidence": "Effective producer config",
+      "priority": "P1",
+      "what_if": "`acks=0` accidentally configured for reliability test"
+    },
+    {
+      "case_id": "P07-G07-08",
+      "expected_safe_behavior": "Config gate catches regression",
+      "group": "G07",
+      "group_title": "C++ Kafka producer enqueue, ACK & retry ambiguity",
+      "independent_evidence": "Effective settings snapshot",
+      "priority": "P1",
+      "what_if": "`enable.idempotence` toggled false under upgrade"
+    },
+    {
+      "case_id": "P07-G07-09",
+      "expected_safe_behavior": "Reject topic-kind and no market pollution",
+      "group": "G07",
+      "group_title": "C++ Kafka producer enqueue, ACK & retry ambiguity",
+      "independent_evidence": "Kafka scanner",
+      "priority": "P1",
+      "what_if": "Producer retries after timeout into wrong topic"
+    },
+    {
+      "case_id": "P07-G07-10",
+      "expected_safe_behavior": "Conflict FAIL (not dedup)",
+      "group": "G07",
+      "group_title": "C++ Kafka producer enqueue, ACK & retry ambiguity",
+      "independent_evidence": "Per-ID digest compare",
+      "priority": "P1",
+      "what_if": "Producer retries with altered payload same source identity"
+    },
+    {
+      "case_id": "P07-G07-11",
+      "expected_safe_behavior": "Detect order/ownership risk; no false sequence assertion",
+      "group": "G07",
+      "group_title": "C++ Kafka producer enqueue, ACK & retry ambiguity",
+      "independent_evidence": "Partition ordered sequence trace",
+      "priority": "P1",
+      "what_if": "Multiple owners publish same symbol concurrently"
+    },
+    {
+      "case_id": "P07-G07-12",
+      "expected_safe_behavior": "Cut INVALID/INCONCLUSIVE, not fenced",
+      "group": "G07",
+      "group_title": "C++ Kafka producer enqueue, ACK & retry ambiguity",
+      "independent_evidence": "Producer in-flight and broker-scan proof",
+      "priority": "P1",
+      "what_if": "Unresolved in-flight messages at P07 cut time"
+    },
+    {
+      "case_id": "P07-G07-13",
+      "expected_safe_behavior": "Data path bounded + count lost receipts ⇒ inconclusive",
+      "group": "G07",
+      "group_title": "C++ Kafka producer enqueue, ACK & retry ambiguity",
+      "independent_evidence": "Delivery callback counter cross-check",
+      "priority": "P2",
+      "what_if": "Delivery reports overflow log/evidence buffer"
+    },
+    {
+      "case_id": "P07-G07-14",
+      "expected_safe_behavior": "Retry controlled, result measured; no false fail-not-written",
+      "group": "G07",
+      "group_title": "C++ Kafka producer enqueue, ACK & retry ambiguity",
+      "independent_evidence": "Broker state and eventual scan",
+      "priority": "P2",
+      "what_if": "Timeout budget too short relative to leader election"
+    },
+    {
+      "case_id": "P07-G08-01",
+      "expected_safe_behavior": "Reject before producer, never random-route",
+      "group": "G08",
+      "group_title": "Kafka keys, partitions, topology and cross-topic ordering",
+      "independent_evidence": "Raw key scanner",
+      "priority": "P0",
+      "what_if": "Null Kafka key on tick event"
+    },
+    {
+      "case_id": "P07-G08-02",
+      "expected_safe_behavior": "Strict mismatch reject/quarantine",
+      "group": "G08",
+      "group_title": "Kafka keys, partitions, topology and cross-topic ordering",
+      "independent_evidence": "Value/key equality",
+      "priority": "P0",
+      "what_if": "Key lower-case but message `symbol=EURUSD`"
+    },
+    {
+      "case_id": "P07-G08-03",
+      "expected_safe_behavior": "Generation cut required; no order guarantee across remap",
+      "group": "G08",
+      "group_title": "Kafka keys, partitions, topology and cross-topic ordering",
+      "independent_evidence": "Topic metadata and generation ledger",
+      "priority": "P0",
+      "what_if": "Partition count increased from 8 to 16 mid-dataset"
+    },
+    {
+      "case_id": "P07-G08-04",
+      "expected_safe_behavior": "Oracle catches cross-topic incorrect order",
+      "group": "G08",
+      "group_title": "Kafka keys, partitions, topology and cross-topic ordering",
+      "independent_evidence": "Per-symbol source seq reconstruction",
+      "priority": "P0",
+      "what_if": "Consumer tries to order tick+quote by Kafka offsets"
+    },
+    {
+      "case_id": "P07-G08-05",
+      "expected_safe_behavior": "Reject topic-kind mismatch",
+      "group": "G08",
+      "group_title": "Kafka keys, partitions, topology and cross-topic ordering",
+      "independent_evidence": "Kafka raw decode audit",
+      "priority": "P1",
+      "what_if": "`md.ticks.v1` contains quote oneof"
+    },
+    {
+      "case_id": "P07-G08-06",
+      "expected_safe_behavior": "Detect routing invariant broken",
+      "group": "G08",
+      "group_title": "Kafka keys, partitions, topology and cross-topic ordering",
+      "independent_evidence": "Symbol→TP map histogram",
+      "priority": "P1",
+      "what_if": "Same symbol spread across partitions by partitioner configuration drift"
+    },
+    {
+      "case_id": "P07-G08-07",
+      "expected_safe_behavior": "Maintain scoped identity, not dedupe across datasets",
+      "group": "G08",
+      "group_title": "Kafka keys, partitions, topology and cross-topic ordering",
+      "independent_evidence": "Dataset keyed diff",
+      "priority": "P1",
+      "what_if": "New dataset reuses source seq 1"
+    },
+    {
+      "case_id": "P07-G08-08",
+      "expected_safe_behavior": "Not treated as missing Kafka tick",
+      "group": "G08",
+      "group_title": "Kafka keys, partitions, topology and cross-topic ordering",
+      "independent_evidence": "Merge source expected ids",
+      "priority": "P1",
+      "what_if": "Cross-topic tick-only source seq jumps due to quote"
+    },
+    {
+      "case_id": "P07-G08-09",
+      "expected_safe_behavior": "Reject cluster/topic identity ambiguity",
+      "group": "G08",
+      "group_title": "Kafka keys, partitions, topology and cross-topic ordering",
+      "independent_evidence": "Cluster ID + creation epoch manifest",
+      "priority": "P1",
+      "what_if": "Topic generation string reused after recreation"
+    },
+    {
+      "case_id": "P07-G08-10",
+      "expected_safe_behavior": "Preflight NO-GO: logs can lose historical keyed events",
+      "group": "G08",
+      "group_title": "Kafka keys, partitions, topology and cross-topic ordering",
+      "independent_evidence": "Effective cleanup.policy",
+      "priority": "P1",
+      "what_if": "Compaction enabled on tick history topic"
+    },
+    {
+      "case_id": "P07-G08-11",
+      "expected_safe_behavior": "Preserve partial cut per TP, no global success",
+      "group": "G08",
+      "group_title": "Kafka keys, partitions, topology and cross-topic ordering",
+      "independent_evidence": "Per-TP offsets/health",
+      "priority": "P1",
+      "what_if": "Partition offline while others healthy"
+    },
+    {
+      "case_id": "P07-G08-12",
+      "expected_safe_behavior": "Cut contaminated; quarantine non-expected dataset",
+      "group": "G08",
+      "group_title": "Kafka keys, partitions, topology and cross-topic ordering",
+      "independent_evidence": "Identity + writer/ACL audit",
+      "priority": "P1",
+      "what_if": "One topic has extra external writer"
+    },
+    {
+      "case_id": "P07-G08-13",
+      "expected_safe_behavior": "Golden mapping gate / generation switch",
+      "group": "G08",
+      "group_title": "Kafka keys, partitions, topology and cross-topic ordering",
+      "independent_evidence": "Known key→partition fixtures",
+      "priority": "P2",
+      "what_if": "Producer partitioner hash changes on library upgrade"
+    },
+    {
+      "case_id": "P07-G08-14",
+      "expected_safe_behavior": "Profile mismatch invalidates benchmark",
+      "group": "G08",
+      "group_title": "Kafka keys, partitions, topology and cross-topic ordering",
+      "independent_evidence": "Topic config and throughput report",
+      "priority": "P2",
+      "what_if": "Tick topic partitions=8, quote partitions=4 unexpectedly"
+    },
+    {
+      "case_id": "P07-G09-01",
+      "expected_safe_behavior": "Recovery classifies unknown ACK; no loss claim without scan",
+      "group": "G09",
+      "group_title": "Kafka broker, leader, ISR & cluster failure",
+      "independent_evidence": "Old/new leader log compare",
+      "priority": "P0",
+      "what_if": "Leader broker SIGKILL immediately after durable append, before ACK"
+    },
+    {
+      "case_id": "P07-G09-02",
+      "expected_safe_behavior": "Continue only if ISR/minISR condition satisfied",
+      "group": "G09",
+      "group_title": "Kafka broker, leader, ISR & cluster failure",
+      "independent_evidence": "ISR timeline+publish probe",
+      "priority": "P0",
+      "what_if": "3-broker RF=3 cluster loses one broker"
+    },
+    {
+      "case_id": "P07-G09-03",
+      "expected_safe_behavior": "`acks=all` publish fails/holds, no forced weaker durability",
+      "group": "G09",
+      "group_title": "Kafka broker, leader, ISR & cluster failure",
+      "independent_evidence": "Effective config+error codes",
+      "priority": "P0",
+      "what_if": "minISR drops below configured 2"
+    },
+    {
+      "case_id": "P07-G09-04",
+      "expected_safe_behavior": "No HA guarantee; stop safely; no fake publish success",
+      "group": "G09",
+      "group_title": "Kafka broker, leader, ISR & cluster failure",
+      "independent_evidence": "Quorum state and unpublished list",
+      "priority": "P0",
+      "what_if": "Two brokers unavailable concurrently"
+    },
+    {
+      "case_id": "P07-G09-05",
+      "expected_safe_behavior": "Retry bounded, per-key order policy verified",
+      "group": "G09",
+      "group_title": "Kafka broker, leader, ISR & cluster failure",
+      "independent_evidence": "Partition logs + source seq",
+      "priority": "P1",
+      "what_if": "Broker leader changes while producer requests in-flight"
+    },
+    {
+      "case_id": "P07-G09-06",
+      "expected_safe_behavior": "RTO measured; no data declared delivered until proof",
+      "group": "G09",
+      "group_title": "Kafka broker, leader, ISR & cluster failure",
+      "independent_evidence": "Cluster health and ACK ledger",
+      "priority": "P1",
+      "what_if": "Controller election stalls > timeout"
+    },
+    {
+      "case_id": "P07-G09-07",
+      "expected_safe_behavior": "Controlled errors, retention & recovery audit",
+      "group": "G09",
+      "group_title": "Kafka broker, leader, ISR & cluster failure",
+      "independent_evidence": "Broker disk/log status",
+      "priority": "P1",
+      "what_if": "Disk full on leader broker"
+    },
+    {
+      "case_id": "P07-G09-08",
+      "expected_safe_behavior": "FAIL transport proof",
+      "group": "G09",
+      "group_title": "Kafka broker, leader, ISR & cluster failure",
+      "independent_evidence": "Error classification + Kafka scan",
+      "priority": "P1",
+      "what_if": "Broker returns NotEnoughReplicas but producer callback mislabels success"
+    },
+    {
+      "case_id": "P07-G09-09",
+      "expected_safe_behavior": "Backpressure; bounded queues; recover cut when connected",
+      "group": "G09",
+      "group_title": "Kafka broker, leader, ISR & cluster failure",
+      "independent_evidence": "Network/queue/broker evidence",
+      "priority": "P1",
+      "what_if": "Network split isolates producer from leader but broker remains up"
+    },
+    {
+      "case_id": "P07-G09-10",
+      "expected_safe_behavior": "No optimistic replay; restore/republish if source exists",
+      "group": "G09",
+      "group_title": "Kafka broker, leader, ISR & cluster failure",
+      "independent_evidence": "Broker recovery audit",
+      "priority": "P1",
+      "what_if": "Broker alive but log directory corrupted in lab"
+    },
+    {
+      "case_id": "P07-G09-11",
+      "expected_safe_behavior": "No rewrite of source event_time_ns",
+      "group": "G09",
+      "group_title": "Kafka broker, leader, ISR & cluster failure",
+      "independent_evidence": "Protobuf data equality",
+      "priority": "P1",
+      "what_if": "Broker clock differs from simulator event-time"
+    },
+    {
+      "case_id": "P07-G09-12",
+      "expected_safe_behavior": "Reconnect or clear failure within budget",
+      "group": "G09",
+      "group_title": "Kafka broker, leader, ISR & cluster failure",
+      "independent_evidence": "Client DNS/reconnect trace",
+      "priority": "P1",
+      "what_if": "Broker changes advertised listeners/DNS during restart"
+    },
+    {
+      "case_id": "P07-G09-13",
+      "expected_safe_behavior": "Retry and load shedding; expose sustained lag",
+      "group": "G09",
+      "group_title": "Kafka broker, leader, ISR & cluster failure",
+      "independent_evidence": "ISR time-series and backlog",
+      "priority": "P2",
+      "what_if": "Slow follower creates persistent ISR churn"
+    },
+    {
+      "case_id": "P07-G09-14",
+      "expected_safe_behavior": "No HA claims from liveness alone",
+      "group": "G09",
+      "group_title": "Kafka broker, leader, ISR & cluster failure",
+      "independent_evidence": "Controller quorum+partition availability",
+      "priority": "P2",
+      "what_if": "Broker rolled while controller quorum reduced"
+    },
+    {
+      "case_id": "P07-G10-01",
+      "expected_safe_behavior": "Explicit NO-GO for old cut, never reset silently",
+      "group": "G10",
+      "group_title": "Kafka retention, offset range & replay feasibility",
+      "independent_evidence": "earliest vs requested start per TP",
+      "priority": "P0",
+      "what_if": "Retention deletes oldest required Kafka offset"
+    },
+    {
+      "case_id": "P07-G10-02",
+      "expected_safe_behavior": "Preflight fail; require explicit start offsets",
+      "group": "G10",
+      "group_title": "Kafka retention, offset range & replay feasibility",
+      "independent_evidence": "Effective consumer config",
+      "priority": "P0",
+      "what_if": "`auto.offset.reset=latest` on new group in recovery"
+    },
+    {
+      "case_id": "P07-G10-03",
+      "expected_safe_behavior": "Detect missing expected identities; no hidden acceptance",
+      "group": "G10",
+      "group_title": "Kafka retention, offset range & replay feasibility",
+      "independent_evidence": "Scanner + topic configuration",
+      "priority": "P0",
+      "what_if": "Kafka raw log compacted due to wrong cleanup policy"
+    },
+    {
+      "case_id": "P07-G10-04",
+      "expected_safe_behavior": "Source restore only via new generation and independent compare",
+      "group": "G10",
+      "group_title": "Kafka retention, offset range & replay feasibility",
+      "independent_evidence": "Missing-coordinate proof",
+      "priority": "P0",
+      "what_if": "Kafka log truncated due to storage failure"
+    },
+    {
+      "case_id": "P07-G10-05",
+      "expected_safe_behavior": "Reject old coordinates without generation identity",
+      "group": "G10",
+      "group_title": "Kafka retention, offset range & replay feasibility",
+      "independent_evidence": "Cluster/topic generation record",
+      "priority": "P1",
+      "what_if": "Topic deleted/recreated with same name"
+    },
+    {
+      "case_id": "P07-G10-06",
+      "expected_safe_behavior": "Use sealed cut and exact seek; no implicit newest",
+      "group": "G10",
+      "group_title": "Kafka retention, offset range & replay feasibility",
+      "independent_evidence": "Broker group offsets vs cut",
+      "priority": "P1",
+      "what_if": "Old consumer committed offset expired"
+    },
+    {
+      "case_id": "P07-G10-07",
+      "expected_safe_behavior": "NO-GO full snapshot even if 15/16 complete",
+      "group": "G10",
+      "group_title": "Kafka retention, offset range & replay feasibility",
+      "independent_evidence": "Per-TP scan coverage",
+      "priority": "P1",
+      "what_if": "One of 16 topic-partitions has retention expired"
+    },
+    {
+      "case_id": "P07-G10-08",
+      "expected_safe_behavior": "Detect via earliest offsets, not time alone",
+      "group": "G10",
+      "group_title": "Kafka retention, offset range & replay feasibility",
+      "independent_evidence": "`retention.bytes` & offset availability",
+      "priority": "P1",
+      "what_if": "Retention time > downtime but byte retention triggers early deletion"
+    },
+    {
+      "case_id": "P07-G10-09",
+      "expected_safe_behavior": "Cut invalid, refence writers and recapture",
+      "group": "G10",
+      "group_title": "Kafka retention, offset range & replay feasibility",
+      "independent_evidence": "Two adjacent HW observations",
+      "priority": "P1",
+      "what_if": "Broker high-watermark moves during cut (rogue writer)"
+    },
+    {
+      "case_id": "P07-G10-10",
+      "expected_safe_behavior": "Reject manifest before consumption",
+      "group": "G10",
+      "group_title": "Kafka retention, offset range & replay feasibility",
+      "independent_evidence": "Cut schema validation",
+      "priority": "P1",
+      "what_if": "Offset start is negative/greater than end"
+    },
+    {
+      "case_id": "P07-G10-11",
+      "expected_safe_behavior": "No seal until sink frontier proven",
+      "group": "G10",
+      "group_title": "Kafka retention, offset range & replay feasibility",
+      "independent_evidence": "Per-TP unfinished queue state",
+      "priority": "P1",
+      "what_if": "Consumer reaches end offset but P05 has in-flight inserts"
+    },
+    {
+      "case_id": "P07-G10-12",
+      "expected_safe_behavior": "Read with pinned isolation level; proof eligible only for committed visibility",
+      "group": "G10",
+      "group_title": "Kafka retention, offset range & replay feasibility",
+      "independent_evidence": "Transaction/LSO probe",
+      "priority": "P1",
+      "what_if": "Kafka transaction visibility/isolation mismatch"
+    },
+    {
+      "case_id": "P07-G10-13",
+      "expected_safe_behavior": "Reject mismatched provenance",
+      "group": "G10",
+      "group_title": "Kafka retention, offset range & replay feasibility",
+      "independent_evidence": "Cluster ID validation",
+      "priority": "P2",
+      "what_if": "Replay uses cut from another Kafka cluster ID"
+    },
+    {
+      "case_id": "P07-G10-14",
+      "expected_safe_behavior": "Admission warning/stop early; report unrecoverable risk",
+      "group": "G10",
+      "group_title": "Kafka retention, offset range & replay feasibility",
+      "independent_evidence": "Forecast catch-up vs earliest progression",
+      "priority": "P2",
+      "what_if": "Long recovery replay takes longer than retention safety margin"
+    },
+    {
+      "case_id": "P07-G11-01",
+      "expected_safe_behavior": "Old worker may still insert; fenced commit + raw dedup proof",
+      "group": "G11",
+      "group_title": "Consumer group rebalance, assignment epoch & stale workers",
+      "independent_evidence": "Epoch and CH rows",
+      "priority": "P0",
+      "what_if": "P05 rebalance after async INSERT sent, before callback"
+    },
+    {
+      "case_id": "P07-G11-02",
+      "expected_safe_behavior": "Do not commit old ownership; conflict-free canonical required",
+      "group": "G11",
+      "group_title": "Consumer group rebalance, assignment epoch & stale workers",
+      "independent_evidence": "on_lost + committed offsets",
+      "priority": "P0",
+      "what_if": "Partition lost callback fires after new owner inserted"
+    },
+    {
+      "case_id": "P07-G11-03",
+      "expected_safe_behavior": "Pause/drain/epoch gate, contiguous frontier only",
+      "group": "G11",
+      "group_title": "Consumer group rebalance, assignment epoch & stale workers",
+      "independent_evidence": "Per-TP job status",
+      "priority": "P0",
+      "what_if": "New member joins while batch unfinished"
+    },
+    {
+      "case_id": "P07-G11-04",
+      "expected_safe_behavior": "Re-read from intended cut start; no silent latest",
+      "group": "G11",
+      "group_title": "Consumer group rebalance, assignment epoch & stale workers",
+      "independent_evidence": "Broker committed next offset",
+      "priority": "P0",
+      "what_if": "Consumer crashes before first offset commit"
+    },
+    {
+      "case_id": "P07-G11-05",
+      "expected_safe_behavior": "Rebalance handled, no commit stale frontier",
+      "group": "G11",
+      "group_title": "Consumer group rebalance, assignment epoch & stale workers",
+      "independent_evidence": "Assignment generation trace",
+      "priority": "P1",
+      "what_if": "`max.poll.interval.ms` elapsed during slow insert"
+    },
+    {
+      "case_id": "P07-G11-06",
+      "expected_safe_behavior": "Physical duplicates may appear; logical canonical remains one",
+      "group": "G11",
+      "group_title": "Consumer group rebalance, assignment epoch & stale workers",
+      "independent_evidence": "In-flight worker and raw rows",
+      "priority": "P1",
+      "what_if": "Two workers process same TP during transition"
+    },
+    {
+      "case_id": "P07-G11-07",
+      "expected_safe_behavior": "Hard fencing; no commit after revoke",
+      "group": "G11",
+      "group_title": "Consumer group rebalance, assignment epoch & stale workers",
+      "independent_evidence": "Commit rejection and reason",
+      "priority": "P1",
+      "what_if": "Consumer falsely reports partition retained on on_revoke"
+    },
+    {
+      "case_id": "P07-G11-08",
+      "expected_safe_behavior": "No offset commit, audit external side effect",
+      "group": "G11",
+      "group_title": "Consumer group rebalance, assignment epoch & stale workers",
+      "independent_evidence": "Journal timestamp + CH scan",
+      "priority": "P1",
+      "what_if": "Worker returns success callback after poll owner shutdown"
+    },
+    {
+      "case_id": "P07-G11-09",
+      "expected_safe_behavior": "Unknown broker commit until read back; retry safely",
+      "group": "G11",
+      "group_title": "Consumer group rebalance, assignment epoch & stale workers",
+      "independent_evidence": "Broker group committed frontier",
+      "priority": "P1",
+      "what_if": "Group coordinator unavailable during commit"
+    },
+    {
+      "case_id": "P07-G11-10",
+      "expected_safe_behavior": "Fail ownership / do not run two owners",
+      "group": "G11",
+      "group_title": "Consumer group rebalance, assignment epoch & stale workers",
+      "independent_evidence": "Rebalance/fencing logs",
+      "priority": "P1",
+      "what_if": "Consumer group static membership ID collision"
+    },
+    {
+      "case_id": "P07-G11-11",
+      "expected_safe_behavior": "Preserve other TP in-flight without global bad commit",
+      "group": "G11",
+      "group_title": "Consumer group rebalance, assignment epoch & stale workers",
+      "independent_evidence": "Per-TP owner and proof",
+      "priority": "P1",
+      "what_if": "Cooperative rebalance revokes subset only"
+    },
+    {
+      "case_id": "P07-G11-12",
+      "expected_safe_behavior": "Isolation failure, verdict INVALID",
+      "group": "G11",
+      "group_title": "Consumer group rebalance, assignment epoch & stale workers",
+      "independent_evidence": "Verifier group.id isolation",
+      "priority": "P1",
+      "what_if": "Consumer uses same group for independent verifier"
+    },
+    {
+      "case_id": "P07-G11-13",
+      "expected_safe_behavior": "Bounded restart/backoff, collect rebalance rate",
+      "group": "G11",
+      "group_title": "Consumer group rebalance, assignment epoch & stale workers",
+      "independent_evidence": "Group timeline / RSS",
+      "priority": "P2",
+      "what_if": "Consumer group assignment oscillates under churn"
+    },
+    {
+      "case_id": "P07-G11-14",
+      "expected_safe_behavior": "Version gate and regression proof",
+      "group": "G11",
+      "group_title": "Consumer group rebalance, assignment epoch & stale workers",
+      "independent_evidence": "Effective protocol and E2E sample",
+      "priority": "P2",
+      "what_if": "Consumer restart with different rebalance protocol version"
+    },
+    {
+      "case_id": "P07-G12-01",
+      "expected_safe_behavior": "Reconsume, no premature commit",
+      "group": "G12",
+      "group_title": "P05 batches, worker queues & partial progress",
+      "independent_evidence": "Kafka frontier+raw absence/presence",
+      "priority": "P0",
+      "what_if": "Crash after batch constructed but before ClickHouse send"
+    },
+    {
+      "case_id": "P07-G12-02",
+      "expected_safe_behavior": "Stop/quarantine per explicit policy, do not commit past hole",
+      "group": "G12",
+      "group_title": "P05 batches, worker queues & partial progress",
+      "independent_evidence": "Per-offset completion bitmap",
+      "priority": "P0",
+      "what_if": "Batch contains 100 offsets but one middle record invalid"
+    },
+    {
+      "case_id": "P07-G12-03",
+      "expected_safe_behavior": "Reject configuration/mutation",
+      "group": "G12",
+      "group_title": "P05 batches, worker queues & partial progress",
+      "independent_evidence": "Batch record coordinates",
+      "priority": "P0",
+      "what_if": "Batch spans two topic-partitions despite MVP isolation requirement"
+    },
+    {
+      "case_id": "P07-G12-04",
+      "expected_safe_behavior": "Proven per-TP frontier remains correct",
+      "group": "G12",
+      "group_title": "P05 batches, worker queues & partial progress",
+      "independent_evidence": "Source sorted offsets",
+      "priority": "P0",
+      "what_if": "Batch row ordering differs from Kafka poll order"
+    },
+    {
+      "case_id": "P07-G12-05",
+      "expected_safe_behavior": "Epoch-fenced commit, raw audit",
+      "group": "G12",
+      "group_title": "P05 batches, worker queues & partial progress",
+      "independent_evidence": "Batch state transitions",
+      "priority": "P1",
+      "what_if": "Partial batch flush succeeds after timer fires during rebalance"
+    },
+    {
+      "case_id": "P07-G12-06",
+      "expected_safe_behavior": "Treat side-effect UNKNOWN unless verified",
+      "group": "G12",
+      "group_title": "P05 batches, worker queues & partial progress",
+      "independent_evidence": "CH readback/digest",
+      "priority": "P1",
+      "what_if": "Sink worker returns success after batch timeout canceled"
+    },
+    {
+      "case_id": "P07-G12-07",
+      "expected_safe_behavior": "No unbounded prefetch growth",
+      "group": "G12",
+      "group_title": "P05 batches, worker queues & partial progress",
+      "independent_evidence": "Queue bytes + consumer pause trace",
+      "priority": "P1",
+      "what_if": "Global queue budget hit while partitions are paused"
+    },
+    {
+      "case_id": "P07-G12-08",
+      "expected_safe_behavior": "Backpressure, no offset store/commit ahead",
+      "group": "G12",
+      "group_title": "P05 batches, worker queues & partial progress",
+      "independent_evidence": "Cached records and frontier",
+      "priority": "P1",
+      "what_if": "Worker queue exhausted, consumer still polling messages"
+    },
+    {
+      "case_id": "P07-G12-09",
+      "expected_safe_behavior": "Two physical rows allowed, logical dedup canonical",
+      "group": "G12",
+      "group_title": "P05 batches, worker queues & partial progress",
+      "independent_evidence": "Input batch vs CH raw",
+      "priority": "P1",
+      "what_if": "Batch has same ID twice due source retry"
+    },
+    {
+      "case_id": "P07-G12-10",
+      "expected_safe_behavior": "No starvation; correct contiguous frontier",
+      "group": "G12",
+      "group_title": "P05 batches, worker queues & partial progress",
+      "independent_evidence": "Flush-time + offset proof",
+      "priority": "P1",
+      "what_if": "Batch age deadline triggers flush under low input"
+    },
+    {
+      "case_id": "P07-G12-11",
+      "expected_safe_behavior": "Isolation per TP; no global fake completeness",
+      "group": "G12",
+      "group_title": "P05 batches, worker queues & partial progress",
+      "independent_evidence": "Per-TP lag and end offsets",
+      "priority": "P1",
+      "what_if": "One TP stuck while others advance"
+    },
+    {
+      "case_id": "P07-G12-12",
+      "expected_safe_behavior": "Fail config preflight",
+      "group": "G12",
+      "group_title": "P05 batches, worker queues & partial progress",
+      "independent_evidence": "Memory budget schema check",
+      "priority": "P1",
+      "what_if": "Batch size configured larger than memory cap"
+    },
+    {
+      "case_id": "P07-G12-13",
+      "expected_safe_behavior": "Throttle/admission, no uncontrolled part growth",
+      "group": "G12",
+      "group_title": "P05 batches, worker queues & partial progress",
+      "independent_evidence": "`system.parts` trend",
+      "priority": "P2",
+      "what_if": "Too-small batch generates CH parts storm"
+    },
+    {
+      "case_id": "P07-G12-14",
+      "expected_safe_behavior": "Bounded split/retry and correct identity consistency",
+      "group": "G12",
+      "group_title": "P05 batches, worker queues & partial progress",
+      "independent_evidence": "RSS/CH insert metrics",
+      "priority": "P2",
+      "what_if": "Too-large batch causes memory spikes"
+    },
+    {
+      "case_id": "P07-G13-01",
+      "expected_safe_behavior": "UNKNOWN client state; retry/reconcile, no early commit",
+      "group": "G13",
+      "group_title": "ClickHouse INSERT ACK ambiguity & server visibility",
+      "independent_evidence": "CH query proof + batch IDs",
+      "priority": "P0",
+      "what_if": "CH server commits block; proxy drops response"
+    },
+    {
+      "case_id": "P07-G13-02",
+      "expected_safe_behavior": "Recover without assuming side effect",
+      "group": "G13",
+      "group_title": "ClickHouse INSERT ACK ambiguity & server visibility",
+      "independent_evidence": "Server query log + raw scan",
+      "priority": "P0",
+      "what_if": "CH rejects block before write but client times out"
+    },
+    {
+      "case_id": "P07-G13-03",
+      "expected_safe_behavior": "Bars never READY without independent proof",
+      "group": "G13",
+      "group_title": "ClickHouse INSERT ACK ambiguity & server visibility",
+      "independent_evidence": "Raw/canonical/bar diff",
+      "priority": "P0",
+      "what_if": "CH accepts part of dependent MV update and request fails"
+    },
+    {
+      "case_id": "P07-G13-04",
+      "expected_safe_behavior": "ACK semantics pinned, no false sink-complete",
+      "group": "G13",
+      "group_title": "ClickHouse INSERT ACK ambiguity & server visibility",
+      "independent_evidence": "Effective CH settings + visibility scan",
+      "priority": "P0",
+      "what_if": "Async INSERT returns enqueue ACK, not durable visibility per configuration"
+    },
+    {
+      "case_id": "P07-G13-05",
+      "expected_safe_behavior": "INCONCLUSIVE until scan, never count as clean failure",
+      "group": "G13",
+      "group_title": "ClickHouse INSERT ACK ambiguity & server visibility",
+      "independent_evidence": "Retry ledger+CH raw audit",
+      "priority": "P1",
+      "what_if": "CH timeout after 10 attempts; rows may exist"
+    },
+    {
+      "case_id": "P07-G13-06",
+      "expected_safe_behavior": "Possibly no/partial request; replay with dedup aware audit",
+      "group": "G13",
+      "group_title": "ClickHouse INSERT ACK ambiguity & server visibility",
+      "independent_evidence": "Network receipt + raw scan",
+      "priority": "P1",
+      "what_if": "Client connection dies during INSERT payload upload"
+    },
+    {
+      "case_id": "P07-G13-07",
+      "expected_safe_behavior": "Verify persistence after restart before READY",
+      "group": "G13",
+      "group_title": "ClickHouse INSERT ACK ambiguity & server visibility",
+      "independent_evidence": "CH raw and part scan",
+      "priority": "P1",
+      "what_if": "Server restarts immediately after ACK"
+    },
+    {
+      "case_id": "P07-G13-08",
+      "expected_safe_behavior": "Schema/table preflight & source-to-raw proof catches",
+      "group": "G13",
+      "group_title": "ClickHouse INSERT ACK ambiguity & server visibility",
+      "independent_evidence": "`system.tables` + dataset scan",
+      "priority": "P1",
+      "what_if": "INSERT into wrong database/table but returns success"
+    },
+    {
+      "case_id": "P07-G13-09",
+      "expected_safe_behavior": "Detect physical duplicates, record attempts",
+      "group": "G13",
+      "group_title": "ClickHouse INSERT ACK ambiguity & server visibility",
+      "independent_evidence": "Driver settings and raw rows",
+      "priority": "P1",
+      "what_if": "Driver auto-retries hidden under app retry"
+    },
+    {
+      "case_id": "P07-G13-10",
+      "expected_safe_behavior": "Block config; no accidental dropping valid events",
+      "group": "G13",
+      "group_title": "ClickHouse INSERT ACK ambiguity & server visibility",
+      "independent_evidence": "Batch IDs and CH settings",
+      "priority": "P1",
+      "what_if": "`insert_deduplication_token` reused for different batch"
+    },
+    {
+      "case_id": "P07-G13-11",
+      "expected_safe_behavior": "Expect physical duplicates, canonical still exact",
+      "group": "G13",
+      "group_title": "ClickHouse INSERT ACK ambiguity & server visibility",
+      "independent_evidence": "Effective table setting + duplicate count",
+      "priority": "P1",
+      "what_if": "Non-replicated MergeTree dedup window default 0"
+    },
+    {
+      "case_id": "P07-G13-12",
+      "expected_safe_behavior": "Physical duplicates possible; never naïve OHLC count",
+      "group": "G13",
+      "group_title": "ClickHouse INSERT ACK ambiguity & server visibility",
+      "independent_evidence": "Raw physical multiset vs C",
+      "priority": "P1",
+      "what_if": "Dedup window expires before delayed retry"
+    },
+    {
+      "case_id": "P07-G13-13",
+      "expected_safe_behavior": "Dedup assumptions invalid; logical correctness still mandatory",
+      "group": "G13",
+      "group_title": "ClickHouse INSERT ACK ambiguity & server visibility",
+      "independent_evidence": "Batch fingerprint + raw audit",
+      "priority": "P2",
+      "what_if": "Same block data encoded in new row order on retry"
+    },
+    {
+      "case_id": "P07-G13-14",
+      "expected_safe_behavior": "Block/rollback migration until versioned test",
+      "group": "G13",
+      "group_title": "ClickHouse INSERT ACK ambiguity & server visibility",
+      "independent_evidence": "DDL version + field-presence diff",
+      "priority": "P2",
+      "what_if": "CH schema migration mid-insert changes type"
+    },
+    {
+      "case_id": "P07-G14-01",
+      "expected_safe_behavior": "FAIL: unprocessed hole skipped",
+      "group": "G14",
+      "group_title": "Kafka offset commits, ordering & atomicity gaps",
+      "independent_evidence": "Commit vs contiguous completed frontier",
+      "priority": "P0",
+      "what_if": "Offset `next=101` committed before offset 100 sink ACK"
+    },
+    {
+      "case_id": "P07-G14-02",
+      "expected_safe_behavior": "Reprocess allowed, logical canonical unique",
+      "group": "G14",
+      "group_title": "Kafka offset commits, ordering & atomicity gaps",
+      "independent_evidence": "Broker committed next offset + duplicates",
+      "priority": "P0",
+      "what_if": "CH ACK returned, Kafka commit fails"
+    },
+    {
+      "case_id": "P07-G14-03",
+      "expected_safe_behavior": "Read back broker state; no assumption",
+      "group": "G14",
+      "group_title": "Kafka offset commits, ordering & atomicity gaps",
+      "independent_evidence": "Group offset query post-restart",
+      "priority": "P0",
+      "what_if": "Kafka commit request ACK lost after server committed"
+    },
+    {
+      "case_id": "P07-G14-04",
+      "expected_safe_behavior": "Do not regress frontier or skip known holes",
+      "group": "G14",
+      "group_title": "Kafka offset commits, ordering & atomicity gaps",
+      "independent_evidence": "Commit request/response sequence",
+      "priority": "P0",
+      "what_if": "Async commit responses reordered 101/102"
+    },
+    {
+      "case_id": "P07-G14-05",
+      "expected_safe_behavior": "Preflight NO-GO; no processing before commit",
+      "group": "G14",
+      "group_title": "Kafka offset commits, ordering & atomicity gaps",
+      "independent_evidence": "Effective config",
+      "priority": "P1",
+      "what_if": "Consumer auto-commit accidentally enabled"
+    },
+    {
+      "case_id": "P07-G14-06",
+      "expected_safe_behavior": "FAIL ownership violation",
+      "group": "G14",
+      "group_title": "Kafka offset commits, ordering & atomicity gaps",
+      "independent_evidence": "Group generation and committed log",
+      "priority": "P1",
+      "what_if": "Commit for revoked TP succeeds from stale epoch bug"
+    },
+    {
+      "case_id": "P07-G14-07",
+      "expected_safe_behavior": "Immediate NO-GO/diff by exact TP",
+      "group": "G14",
+      "group_title": "Kafka offset commits, ordering & atomicity gaps",
+      "independent_evidence": "Commit metadata map",
+      "priority": "P1",
+      "what_if": "Kafka offset committed for another topic partition"
+    },
+    {
+      "case_id": "P07-G14-08",
+      "expected_safe_behavior": "Reject API misuse / ownership assert",
+      "group": "G14",
+      "group_title": "Kafka offset commits, ordering & atomicity gaps",
+      "independent_evidence": "Thread trace in test",
+      "priority": "P1",
+      "what_if": "Commit from poll worker not poll owner"
+    },
+    {
+      "case_id": "P07-G14-09",
+      "expected_safe_behavior": "Duplicate reconsume expected, logical canonical one",
+      "group": "G14",
+      "group_title": "Kafka offset commits, ordering & atomicity gaps",
+      "independent_evidence": "Restart offset + CH raw duplicates",
+      "priority": "P1",
+      "what_if": "P05 crash after CH ACK before commit"
+    },
+    {
+      "case_id": "P07-G14-10",
+      "expected_safe_behavior": "Hole unit model FAIL, production gate NO-GO",
+      "group": "G14",
+      "group_title": "Kafka offset commits, ordering & atomicity gaps",
+      "independent_evidence": "Per-offset bitmap",
+      "priority": "P1",
+      "what_if": "Commit offset from max processed instead of contiguous frontier"
+    },
+    {
+      "case_id": "P07-G14-11",
+      "expected_safe_behavior": "Explicit cut starts mandatory, no silent reset",
+      "group": "G14",
+      "group_title": "Kafka offset commits, ordering & atomicity gaps",
+      "independent_evidence": "Broker metadata & replay IDs",
+      "priority": "P1",
+      "what_if": "Consumer group deleted/recreated with same name"
+    },
+    {
+      "case_id": "P07-G14-12",
+      "expected_safe_behavior": "Reject skip and emit alert",
+      "group": "G14",
+      "group_title": "Kafka offset commits, ordering & atomicity gaps",
+      "independent_evidence": "Position vs expected ranges",
+      "priority": "P1",
+      "what_if": "Manual seek past expected Kafka cut without approval"
+    },
+    {
+      "case_id": "P07-G14-13",
+      "expected_safe_behavior": "Reject/repair with verified broker state",
+      "group": "G14",
+      "group_title": "Kafka offset commits, ordering & atomicity gaps",
+      "independent_evidence": "Checkpoint version/coordinate diff",
+      "priority": "P2",
+      "what_if": "Offset stored in external checkpoint with stale schema"
+    },
+    {
+      "case_id": "P07-G14-14",
+      "expected_safe_behavior": "Bounded retry/deadline; no false success",
+      "group": "G14",
+      "group_title": "Kafka offset commits, ordering & atomicity gaps",
+      "independent_evidence": "Requests rate and group health",
+      "priority": "P2",
+      "what_if": "Commit retry storm overloads coordinator"
+    },
+    {
+      "case_id": "P07-G15-01",
+      "expected_safe_behavior": "Canonical 1 logical row; track 3 physical records",
+      "group": "G15",
+      "group_title": "Idempotency, duplicates & retries across all layers",
+      "independent_evidence": "Exact source/Kafka/raw/C compare",
+      "priority": "P0",
+      "what_if": "Same source ID republished 3 times with same semantic digest"
+    },
+    {
+      "case_id": "P07-G15-02",
+      "expected_safe_behavior": "CONFLICT/NO-GO, not 'last write wins'",
+      "group": "G15",
+      "group_title": "Idempotency, duplicates & retries across all layers",
+      "independent_evidence": "Digest and full-field diff",
+      "priority": "P0",
+      "what_if": "Same source ID republished once with altered quote ask"
+    },
+    {
+      "case_id": "P07-G15-03",
+      "expected_safe_behavior": "Physical duplicate acceptable; logical not doubled",
+      "group": "G15",
+      "group_title": "Idempotency, duplicates & retries across all layers",
+      "independent_evidence": "Raw TP coordinate count",
+      "priority": "P0",
+      "what_if": "CH reinsert same Kafka coordinate after timeout"
+    },
+    {
+      "case_id": "P07-G15-04",
+      "expected_safe_behavior": "Source-level identity classifies duplicates",
+      "group": "G15",
+      "group_title": "Idempotency, duplicates & retries across all layers",
+      "independent_evidence": "Per-ID Kafka multiset",
+      "priority": "P0",
+      "what_if": "Kafka producer retries with new producer session"
+    },
+    {
+      "case_id": "P07-G15-05",
+      "expected_safe_behavior": "No incorrect offset skipping; canonical one",
+      "group": "G15",
+      "group_title": "Idempotency, duplicates & retries across all layers",
+      "independent_evidence": "Pre/post committed frontier",
+      "priority": "P1",
+      "what_if": "P05 receives duplicate from separate consumer restart"
+    },
+    {
+      "case_id": "P07-G15-06",
+      "expected_safe_behavior": "Staging DIRTY/rebuild or idempotent verified path",
+      "group": "G15",
+      "group_title": "Idempotency, duplicates & retries across all layers",
+      "independent_evidence": "Candidate rows per ID",
+      "priority": "P1",
+      "what_if": "P06 canonical staging accidentally built twice same build ID"
+    },
+    {
+      "case_id": "P07-G15-07",
+      "expected_safe_behavior": "Bar fails proof if double counted; reject READY",
+      "group": "G15",
+      "group_title": "Idempotency, duplicates & retries across all layers",
+      "independent_evidence": "Independent tick_count/OHLC",
+      "priority": "P1",
+      "what_if": "Materialized view receives same source IDs twice"
+    },
+    {
+      "case_id": "P07-G15-08",
+      "expected_safe_behavior": "Run policy isolates attempt, source identity explicit",
+      "group": "G15",
+      "group_title": "Idempotency, duplicates & retries across all layers",
+      "independent_evidence": "Run manifest and source digests",
+      "priority": "P1",
+      "what_if": "Duplicate `dataset_id` across two independent test runs"
+    },
+    {
+      "case_id": "P07-G15-09",
+      "expected_safe_behavior": "Same logical event if known schema/presence equal",
+      "group": "G15",
+      "group_title": "Idempotency, duplicates & retries across all layers",
+      "independent_evidence": "Semantic projection, not bytes",
+      "priority": "P1",
+      "what_if": "Duplicate event with bytewise-different but semantically equal Protobuf"
+    },
+    {
+      "case_id": "P07-G15-10",
+      "expected_safe_behavior": "Conflict, do not dedupe",
+      "group": "G15",
+      "group_title": "Idempotency, duplicates & retries across all layers",
+      "independent_evidence": "Presence-aware P05-CORE-V1",
+      "priority": "P1",
+      "what_if": "Duplicate event with one optional field absent vs explicit zero"
+    },
+    {
+      "case_id": "P07-G15-11",
+      "expected_safe_behavior": "Reject or explicit idempotent replay policy",
+      "group": "G15",
+      "group_title": "Idempotency, duplicates & retries across all layers",
+      "independent_evidence": "Topic-generation cut receipts",
+      "priority": "P1",
+      "what_if": "Replay over existing Kafka topic without new generation manifest"
+    },
+    {
+      "case_id": "P07-G15-12",
+      "expected_safe_behavior": "Cap retries and hold source; no OOM",
+      "group": "G15",
+      "group_title": "Idempotency, duplicates & retries across all layers",
+      "independent_evidence": "Attempt count, queue, CPU",
+      "priority": "P1",
+      "what_if": "Retry budget unlimited under CH down"
+    },
+    {
+      "case_id": "P07-G15-13",
+      "expected_safe_behavior": "Segregate cuts/builds; no accidental extra READY rows",
+      "group": "G15",
+      "group_title": "Idempotency, duplicates & retries across all layers",
+      "independent_evidence": "Build lineage and identity scan",
+      "priority": "P2",
+      "what_if": "Backfill overlaps live ingestion same source dataset"
+    },
+    {
+      "case_id": "P07-G15-14",
+      "expected_safe_behavior": "Correctness gate requires explicit canonical verification",
+      "group": "G15",
+      "group_title": "Idempotency, duplicates & retries across all layers",
+      "independent_evidence": "Before/after merges row diff",
+      "priority": "P2",
+      "what_if": "`ReplacingMergeTree` background merge assumed immediate dedup"
+    },
+    {
+      "case_id": "P07-G16-01",
+      "expected_safe_behavior": "P0 conflict; no arbitrary selected row",
+      "group": "G16",
+      "group_title": "Semantic identity conflicts & malformed records",
+      "independent_evidence": "Event-kind digest diff",
+      "priority": "P0",
+      "what_if": "Same `(dataset,symbol,seq)` tick and quote variants"
+    },
+    {
+      "case_id": "P07-G16-02",
+      "expected_safe_behavior": "P0 conflict even if formatted decimal looks same",
+      "group": "G16",
+      "group_title": "Semantic identity conflicts & malformed records",
+      "independent_evidence": "Integer comparison",
+      "priority": "P0",
+      "what_if": "Same source ID but price differs by one fixed-point tick"
+    },
+    {
+      "case_id": "P07-G16-03",
+      "expected_safe_behavior": "P0 conflict; no mixing OHLC scales",
+      "group": "G16",
+      "group_title": "Semantic identity conflicts & malformed records",
+      "independent_evidence": "Scale audit and semantic oracle",
+      "priority": "P0",
+      "what_if": "Same ID/event-time but `price_scale` changes"
+    },
+    {
+      "case_id": "P07-G16-04",
+      "expected_safe_behavior": "Policy-version conflict/reject unless migration proved",
+      "group": "G16",
+      "group_title": "Semantic identity conflicts & malformed records",
+      "independent_evidence": "Core field diff",
+      "priority": "P0",
+      "what_if": "Same source ID but `source_schema_version` differs"
+    },
+    {
+      "case_id": "P07-G16-05",
+      "expected_safe_behavior": "Reject/quarantine, no accepted sink event",
+      "group": "G16",
+      "group_title": "Semantic identity conflicts & malformed records",
+      "independent_evidence": "Header vs protobuf validation",
+      "priority": "P1",
+      "what_if": "Kafka header dataset differs from value dataset"
+    },
+    {
+      "case_id": "P07-G16-06",
+      "expected_safe_behavior": "Reject, no cross-symbol misroute",
+      "group": "G16",
+      "group_title": "Semantic identity conflicts & malformed records",
+      "independent_evidence": "Raw Kafka key/value check",
+      "priority": "P1",
+      "what_if": "Key `EURUSD`, protobuf symbol `GBPUSD`"
+    },
+    {
+      "case_id": "P07-G16-07",
+      "expected_safe_behavior": "Fail closed, no type guessing",
+      "group": "G16",
+      "group_title": "Semantic identity conflicts & malformed records",
+      "independent_evidence": "Descriptor oneof validation",
+      "priority": "P1",
+      "what_if": "Protobuf unknown variant interpreted as tick"
+    },
+    {
+      "case_id": "P07-G16-08",
+      "expected_safe_behavior": "Independent recompute detects mismatch",
+      "group": "G16",
+      "group_title": "Semantic identity conflicts & malformed records",
+      "independent_evidence": "P05-CORE-V1 recompute",
+      "priority": "P1",
+      "what_if": "P05 payload digest corrupted but raw values unchanged"
+    },
+    {
+      "case_id": "P07-G16-09",
+      "expected_safe_behavior": "Classify physical duplicate, no conflict",
+      "group": "G16",
+      "group_title": "Semantic identity conflicts & malformed records",
+      "independent_evidence": "Coordinate/digest multimap",
+      "priority": "P1",
+      "what_if": "Two physically different Kafka coords map to same logical ID/digest"
+    },
+    {
+      "case_id": "P07-G16-10",
+      "expected_safe_behavior": "Strict market topic empty for that event",
+      "group": "G16",
+      "group_title": "Semantic identity conflicts & malformed records",
+      "independent_evidence": "Test manifest and Kafka scan",
+      "priority": "P1",
+      "what_if": "Negative price injected intentionally into isolated fault topic"
+    },
+    {
+      "case_id": "P07-G16-11",
+      "expected_safe_behavior": "Reject, no hash collision through normalization",
+      "group": "G16",
+      "group_title": "Semantic identity conflicts & malformed records",
+      "independent_evidence": "Decoder error trace",
+      "priority": "P1",
+      "what_if": "Malformed UTF-8 `dataset_id` in payload"
+    },
+    {
+      "case_id": "P07-G16-12",
+      "expected_safe_behavior": "Reject cap; avoid high-cardinality metrics",
+      "group": "G16",
+      "group_title": "Semantic identity conflicts & malformed records",
+      "independent_evidence": "Payload bytes and metric series count",
+      "priority": "P1",
+      "what_if": "Very long symbol value/metric label"
+    },
+    {
+      "case_id": "P07-G16-13",
+      "expected_safe_behavior": "No silent canonicalization; fail golden fixtures",
+      "group": "G16",
+      "group_title": "Semantic identity conflicts & malformed records",
+      "independent_evidence": "C++/Python canonical binary samples",
+      "priority": "P2",
+      "what_if": "Canonical implementation changes string normalization"
+    },
+    {
+      "case_id": "P07-G16-14",
+      "expected_safe_behavior": "Preserve prior immutable READY; mark new dataset/build DIRTY",
+      "group": "G16",
+      "group_title": "Semantic identity conflicts & malformed records",
+      "independent_evidence": "Catalog pointer and audit",
+      "priority": "P2",
+      "what_if": "Conflicting rows arrive after READY published"
+    },
+    {
+      "case_id": "P07-G17-01",
+      "expected_safe_behavior": "FAIL; count equality insufficient",
+      "group": "G17",
+      "group_title": "P06 raw audit, canonical set & snapshot-cut integrity",
+      "independent_evidence": "Full ID-set symmetric difference",
+      "priority": "P0",
+      "what_if": "Raw physical count matches expected but one missing/one extra identity"
+    },
+    {
+      "case_id": "P07-G17-02",
+      "expected_safe_behavior": "FAIL completeness despite equal row count",
+      "group": "G17",
+      "group_title": "P06 raw audit, canonical set & snapshot-cut integrity",
+      "independent_evidence": "Physical multiset vs oracle",
+      "priority": "P0",
+      "what_if": "Raw has duplicate same ID and missing another"
+    },
+    {
+      "case_id": "P07-G17-03",
+      "expected_safe_behavior": "Semantic FAIL, no publish",
+      "group": "G17",
+      "group_title": "P06 raw audit, canonical set & snapshot-cut integrity",
+      "independent_evidence": "Field-by-field comparison",
+      "priority": "P0",
+      "what_if": "Raw has right IDs but bid/ask values swapped"
+    },
+    {
+      "case_id": "P07-G17-04",
+      "expected_safe_behavior": "Invalid cut; freeze to end offsets first",
+      "group": "G17",
+      "group_title": "P06 raw audit, canonical set & snapshot-cut integrity",
+      "independent_evidence": "Kafka/P05 fence receipt",
+      "priority": "P0",
+      "what_if": "P06 auditor reads while P05 inserts unbounded live stream"
+    },
+    {
+      "case_id": "P07-G17-05",
+      "expected_safe_behavior": "INCONCLUSIVE/NO-GO; coverage incomplete",
+      "group": "G17",
+      "group_title": "P06 raw audit, canonical set & snapshot-cut integrity",
+      "independent_evidence": "Per-TP scanned range proof",
+      "priority": "P1",
+      "what_if": "Kafka scanner only reads 7/8 partitions of tick topic"
+    },
+    {
+      "case_id": "P07-G17-06",
+      "expected_safe_behavior": "Classify extra/out-of-cut, no READY pollution",
+      "group": "G17",
+      "group_title": "P06 raw audit, canonical set & snapshot-cut integrity",
+      "independent_evidence": "Coordinate range check",
+      "priority": "P1",
+      "what_if": "P05 raw row has Kafka coordinate outside sealed cut"
+    },
+    {
+      "case_id": "P07-G17-07",
+      "expected_safe_behavior": "NO-GO and preserve incident evidence",
+      "group": "G17",
+      "group_title": "P06 raw audit, canonical set & snapshot-cut integrity",
+      "independent_evidence": "Before/after part/row scan",
+      "priority": "P1",
+      "what_if": "CH rows disappear under TTL during audit"
+    },
+    {
+      "case_id": "P07-G17-08",
+      "expected_safe_behavior": "FAIL scoped build isolation",
+      "group": "G17",
+      "group_title": "P06 raw audit, canonical set & snapshot-cut integrity",
+      "independent_evidence": "Build ID vs source manifest",
+      "priority": "P1",
+      "what_if": "Canonical candidate references mixed dataset IDs"
+    },
+    {
+      "case_id": "P07-G17-09",
+      "expected_safe_behavior": "FAIL even if OHLC coincidentally equal",
+      "group": "G17",
+      "group_title": "P06 raw audit, canonical set & snapshot-cut integrity",
+      "independent_evidence": "`GROUP BY` identity and exact count",
+      "priority": "P1",
+      "what_if": "Canonical has duplicate source identity in same build"
+    },
+    {
+      "case_id": "P07-G17-10",
+      "expected_safe_behavior": "Full semantic check catches independent hash bug",
+      "group": "G17",
+      "group_title": "P06 raw audit, canonical set & snapshot-cut integrity",
+      "independent_evidence": "Actual field projection vs source",
+      "priority": "P1",
+      "what_if": "Canonical event payload digest matches but typed price field wrong"
+    },
+    {
+      "case_id": "P07-G17-11",
+      "expected_safe_behavior": "Do not READY; stale incomplete candidate",
+      "group": "G17",
+      "group_title": "P06 raw audit, canonical set & snapshot-cut integrity",
+      "independent_evidence": "Per-TP completed frontier",
+      "priority": "P1",
+      "what_if": "Canonical built before P05 frontier reached cut"
+    },
+    {
+      "case_id": "P07-G17-12",
+      "expected_safe_behavior": "Isolate source/cut, reject contaminated build",
+      "group": "G17",
+      "group_title": "P06 raw audit, canonical set & snapshot-cut integrity",
+      "independent_evidence": "Topic/row provenance",
+      "priority": "P1",
+      "what_if": "Unexpected raw rows written after source sealed (rogue producer)"
+    },
+    {
+      "case_id": "P07-G17-13",
+      "expected_safe_behavior": "Bounded external sort/hash shards; no false pass",
+      "group": "G17",
+      "group_title": "P06 raw audit, canonical set & snapshot-cut integrity",
+      "independent_evidence": "Memory profile and exact partitioned diff",
+      "priority": "P2",
+      "what_if": "Large dataset audit OOMs on full in-memory dict"
+    },
+    {
+      "case_id": "P07-G17-14",
+      "expected_safe_behavior": "Diagnostic only, cannot label full PASS",
+      "group": "G17",
+      "group_title": "P06 raw audit, canonical set & snapshot-cut integrity",
+      "independent_evidence": "Coverage report includes 100% ID/key verification",
+      "priority": "P2",
+      "what_if": "Auditor sample compares only 1% of 200M rows"
+    },
+    {
+      "case_id": "P07-G18-01",
+      "expected_safe_behavior": "Canonical once; OHLC high not counted twice",
+      "group": "G18",
+      "group_title": "OHLC aggregation, incremental MV & late data",
+      "independent_evidence": "Reference OHLC and canonical unique",
+      "priority": "P0",
+      "what_if": "Raw retry duplicates a tick with extreme HIGH"
+    },
+    {
+      "case_id": "P07-G18-02",
+      "expected_safe_behavior": "FAIL tick_count invariant despite equal OHLC",
+      "group": "G18",
+      "group_title": "OHLC aggregation, incremental MV & late data",
+      "independent_evidence": "Tick_count exact",
+      "priority": "P0",
+      "what_if": "Same source ID duplicate changes tick_count but not OHLC values"
+    },
+    {
+      "case_id": "P07-G18-03",
+      "expected_safe_behavior": "OPEN/CLOSE tie-break `(event_time_ns,sequence)`",
+      "group": "G18",
+      "group_title": "OHLC aggregation, incremental MV & late data",
+      "independent_evidence": "Reference integer sorting",
+      "priority": "P0",
+      "what_if": "Two ticks share timestamp but different sequence"
+    },
+    {
+      "case_id": "P07-G18-04",
+      "expected_safe_behavior": "Included in prior minute `[start,end)`",
+      "group": "G18",
+      "group_title": "OHLC aggregation, incremental MV & late data",
+      "independent_evidence": "Boundary unit fixture",
+      "priority": "P0",
+      "what_if": "Tick with event_time at last ns of minute"
+    },
+    {
+      "case_id": "P07-G18-05",
+      "expected_safe_behavior": "Goes next minute, not prior",
+      "group": "G18",
+      "group_title": "OHLC aggregation, incremental MV & late data",
+      "independent_evidence": "`bar_start_ns` equality",
+      "priority": "P1",
+      "what_if": "Tick exactly at next minute boundary"
+    },
+    {
+      "case_id": "P07-G18-06",
+      "expected_safe_behavior": "No quote in tick OHLC; trade volume not invented",
+      "group": "G18",
+      "group_title": "OHLC aggregation, incremental MV & late data",
+      "independent_evidence": "Event-kind comparison",
+      "priority": "P1",
+      "what_if": "Quote erroneously treated as tick trade"
+    },
+    {
+      "case_id": "P07-G18-07",
+      "expected_safe_behavior": "Old build immutable; new cut/build required",
+      "group": "G18",
+      "group_title": "OHLC aggregation, incremental MV & late data",
+      "independent_evidence": "Build pointer lineage",
+      "priority": "P1",
+      "what_if": "Late tick for already READY interval"
+    },
+    {
+      "case_id": "P07-G18-08",
+      "expected_safe_behavior": "CONFLICT/NO-GO without policy; no silent update",
+      "group": "G18",
+      "group_title": "OHLC aggregation, incremental MV & late data",
+      "independent_evidence": "Digest audit",
+      "priority": "P1",
+      "what_if": "Correction changes price at already published source identity"
+    },
+    {
+      "case_id": "P07-G18-09",
+      "expected_safe_behavior": "Bar oracle detects mismatch",
+      "group": "G18",
+      "group_title": "OHLC aggregation, incremental MV & late data",
+      "independent_evidence": "Independent `argMin/argMax` computation",
+      "priority": "P1",
+      "what_if": "MV state written but final query aggregator wrong"
+    },
+    {
+      "case_id": "P07-G18-10",
+      "expected_safe_behavior": "Bars fail, rebuild staging",
+      "group": "G18",
+      "group_title": "OHLC aggregation, incremental MV & late data",
+      "independent_evidence": "Bar key-set diff",
+      "priority": "P1",
+      "what_if": "MV target missing insert despite canonical source complete"
+    },
+    {
+      "case_id": "P07-G18-11",
+      "expected_safe_behavior": "Reject or explicit exact conversion policy, MVP STOP",
+      "group": "G18",
+      "group_title": "OHLC aggregation, incremental MV & late data",
+      "independent_evidence": "Scale equality per symbol",
+      "priority": "P1",
+      "what_if": "Multiple price scales for same symbol in one bar"
+    },
+    {
+      "case_id": "P07-G18-12",
+      "expected_safe_behavior": "Final OHLC semantic stable; no double counting",
+      "group": "G18",
+      "group_title": "OHLC aggregation, incremental MV & late data",
+      "independent_evidence": "Before/after merge oracle",
+      "priority": "P1",
+      "what_if": "ClickHouse background merges change physical states"
+    },
+    {
+      "case_id": "P07-G18-13",
+      "expected_safe_behavior": "Prevent fabricated bar unless explicitly configured",
+      "group": "G18",
+      "group_title": "OHLC aggregation, incremental MV & late data",
+      "independent_evidence": "Missing-minute reference",
+      "priority": "P2",
+      "what_if": "No ticks in a minute but query forward-fills silently"
+    },
+    {
+      "case_id": "P07-G18-14",
+      "expected_safe_behavior": "Reader remains pinned to verified build",
+      "group": "G18",
+      "group_title": "OHLC aggregation, incremental MV & late data",
+      "independent_evidence": "Reader build_id and catalog history",
+      "priority": "P2",
+      "what_if": "P06 rebuild active while reader querying OLD READY"
+    },
+    {
+      "case_id": "P07-G19-01",
+      "expected_safe_behavior": "P0 false READY; gate must reject",
+      "group": "G19",
+      "group_title": "P06 publish gate, READY pointer, crash and rollback",
+      "independent_evidence": "Publish receipt vs audit completion",
+      "priority": "P0",
+      "what_if": "Catalog pointer updated before audit completes"
+    },
+    {
+      "case_id": "P07-G19-02",
+      "expected_safe_behavior": "Old READY remains; candidate not yet published",
+      "group": "G19",
+      "group_title": "P06 publish gate, READY pointer, crash and rollback",
+      "independent_evidence": "Pointer atomicity probe",
+      "priority": "P0",
+      "what_if": "Crash after bars verified but before pointer commit"
+    },
+    {
+      "case_id": "P07-G19-03",
+      "expected_safe_behavior": "Read actual pointer, no blind republish",
+      "group": "G19",
+      "group_title": "P06 publish gate, READY pointer, crash and rollback",
+      "independent_evidence": "Catalog readback + CAS receipt",
+      "priority": "P0",
+      "what_if": "Crash after pointer commit but before success response"
+    },
+    {
+      "case_id": "P07-G19-04",
+      "expected_safe_behavior": "Single-writer/CAS gate; no lost updates",
+      "group": "G19",
+      "group_title": "P06 publish gate, READY pointer, crash and rollback",
+      "independent_evidence": "Lock/CAS history",
+      "priority": "P0",
+      "what_if": "Two concurrent P06 builders publish different build IDs"
+    },
+    {
+      "case_id": "P07-G19-05",
+      "expected_safe_behavior": "Access control/query API must scope READY",
+      "group": "G19",
+      "group_title": "P06 publish gate, READY pointer, crash and rollback",
+      "independent_evidence": "Unauthorized query test",
+      "priority": "P1",
+      "what_if": "Reader queries unverified staging build via direct SQL"
+    },
+    {
+      "case_id": "P07-G19-06",
+      "expected_safe_behavior": "Keep old READY; fail new release",
+      "group": "G19",
+      "group_title": "P06 publish gate, READY pointer, crash and rollback",
+      "independent_evidence": "Ready pointer + diff report",
+      "priority": "P1",
+      "what_if": "New build has missing rows but older READY valid"
+    },
+    {
+      "case_id": "P07-G19-07",
+      "expected_safe_behavior": "Atomic replace + fsync or detect/hold",
+      "group": "G19",
+      "group_title": "P06 publish gate, READY pointer, crash and rollback",
+      "independent_evidence": "File format validation after restart",
+      "priority": "P1",
+      "what_if": "Catalog partially written JSON due power loss"
+    },
+    {
+      "case_id": "P07-G19-08",
+      "expected_safe_behavior": "Block rollback until materialized data available",
+      "group": "G19",
+      "group_title": "P06 publish gate, READY pointer, crash and rollback",
+      "independent_evidence": "Build availability probe",
+      "priority": "P1",
+      "what_if": "Manual rollback points to build that TTL already removed"
+    },
+    {
+      "case_id": "P07-G19-09",
+      "expected_safe_behavior": "Read pointer/history; idempotent or conflict-aware",
+      "group": "G19",
+      "group_title": "P06 publish gate, READY pointer, crash and rollback",
+      "independent_evidence": "Catalog version+receipt",
+      "priority": "P1",
+      "what_if": "Publisher retries CAS after ambiguous response"
+    },
+    {
+      "case_id": "P07-G19-10",
+      "expected_safe_behavior": "Not silently included in old build",
+      "group": "G19",
+      "group_title": "P06 publish gate, READY pointer, crash and rollback",
+      "independent_evidence": "Cut manifest vs catalog metadata",
+      "priority": "P1",
+      "what_if": "New source generation added after cut"
+    },
+    {
+      "case_id": "P07-G19-11",
+      "expected_safe_behavior": "Each query pins one build; no mixed-bar result",
+      "group": "G19",
+      "group_title": "P06 publish gate, READY pointer, crash and rollback",
+      "independent_evidence": "Concurrent reader logs",
+      "priority": "P1",
+      "what_if": "Two readers observe different versions during CAS"
+    },
+    {
+      "case_id": "P07-G19-12",
+      "expected_safe_behavior": "Protection/restore, test FAIL if old build unavailable",
+      "group": "G19",
+      "group_title": "P06 publish gate, READY pointer, crash and rollback",
+      "independent_evidence": "Old build query before/after",
+      "priority": "P1",
+      "what_if": "Builder cleanup deletes old READY data accidentally"
+    },
+    {
+      "case_id": "P07-G19-13",
+      "expected_safe_behavior": "Detect digest mismatch, quarantine",
+      "group": "G19",
+      "group_title": "P06 publish gate, READY pointer, crash and rollback",
+      "independent_evidence": "Build manifest signature/hash",
+      "priority": "P2",
+      "what_if": "Staging build_id reused with changed content"
+    },
+    {
+      "case_id": "P07-G19-14",
+      "expected_safe_behavior": "Bounded response, no mixed/unverified state",
+      "group": "G19",
+      "group_title": "P06 publish gate, READY pointer, crash and rollback",
+      "independent_evidence": "p95 + build consistency proof",
+      "priority": "P2",
+      "what_if": "Publication performance under 100 concurrent clients"
+    },
+    {
+      "case_id": "P07-G20-01",
+      "expected_safe_behavior": "NO-GO, source rebuild required",
+      "group": "G20",
+      "group_title": "TTL, Kafka retention, backup & disaster restore",
+      "independent_evidence": "Raw/cut proof and backup availability",
+      "priority": "P0",
+      "what_if": "Raw TTL deletes only copy before canonical audit"
+    },
+    {
+      "case_id": "P07-G20-02",
+      "expected_safe_behavior": "RPO not provably zero, INCONCLUSIVE",
+      "group": "G20",
+      "group_title": "TTL, Kafka retention, backup & disaster restore",
+      "independent_evidence": "Source/Broker availability snapshots",
+      "priority": "P0",
+      "what_if": "P01 source file lost and Kafka retention expired"
+    },
+    {
+      "case_id": "P07-G20-03",
+      "expected_safe_behavior": "Backup is not verified until restore rehearsal",
+      "group": "G20",
+      "group_title": "TTL, Kafka retention, backup & disaster restore",
+      "independent_evidence": "Restored DDL and field diff",
+      "priority": "P0",
+      "what_if": "Backup reports success but restore corrupts schema"
+    },
+    {
+      "case_id": "P07-G20-04",
+      "expected_safe_behavior": "Do not expose READY without proof lineage",
+      "group": "G20",
+      "group_title": "TTL, Kafka retention, backup & disaster restore",
+      "independent_evidence": "Restore journal+catalog version",
+      "priority": "P0",
+      "what_if": "Restore ClickHouse volume but lose catalog/manifest"
+    },
+    {
+      "case_id": "P07-G20-05",
+      "expected_safe_behavior": "No independent recovery domain; no RPO=0 claim",
+      "group": "G20",
+      "group_title": "TTL, Kafka retention, backup & disaster restore",
+      "independent_evidence": "Fault-domain inventory",
+      "priority": "P1",
+      "what_if": "Two backups both stored on same failed disk"
+    },
+    {
+      "case_id": "P07-G20-06",
+      "expected_safe_behavior": "Snapshot not usable for proof until reconciled",
+      "group": "G20",
+      "group_title": "TTL, Kafka retention, backup & disaster restore",
+      "independent_evidence": "Kafka cut+backup manifest",
+      "priority": "P1",
+      "what_if": "Backup captured raw while P05 writing without consistent cut"
+    },
+    {
+      "case_id": "P07-G20-07",
+      "expected_safe_behavior": "Freeze policy or fail with reproducible rebuild needed",
+      "group": "G20",
+      "group_title": "TTL, Kafka retention, backup & disaster restore",
+      "independent_evidence": "Part/TTL chronology",
+      "priority": "P1",
+      "what_if": "TTL mutates old raw during P06 rebuild"
+    },
+    {
+      "case_id": "P07-G20-08",
+      "expected_safe_behavior": "Detect requested offsets out of range",
+      "group": "G20",
+      "group_title": "TTL, Kafka retention, backup & disaster restore",
+      "independent_evidence": "Earliest offset snapshots",
+      "priority": "P1",
+      "what_if": "Kafka `retention.bytes` expires despite high `retention.ms`"
+    },
+    {
+      "case_id": "P07-G20-09",
+      "expected_safe_behavior": "Restore from isolated backup, do not rely replicas",
+      "group": "G20",
+      "group_title": "TTL, Kafka retention, backup & disaster restore",
+      "independent_evidence": "Restore drill",
+      "priority": "P1",
+      "what_if": "ClickHouse replication propagates accidental delete"
+    },
+    {
+      "case_id": "P07-G20-10",
+      "expected_safe_behavior": "FAIL exact oracle; stop READY",
+      "group": "G20",
+      "group_title": "TTL, Kafka retention, backup & disaster restore",
+      "independent_evidence": "Full identity reconciliation",
+      "priority": "P1",
+      "what_if": "Restore 100M rows but skip final 1M due timeouts"
+    },
+    {
+      "case_id": "P07-G20-11",
+      "expected_safe_behavior": "Recovery infeasible; mark NO-GO",
+      "group": "G20",
+      "group_title": "TTL, Kafka retention, backup & disaster restore",
+      "independent_evidence": "Restore failure and key availability proof",
+      "priority": "P1",
+      "what_if": "Backup encryption key unavailable"
+    },
+    {
+      "case_id": "P07-G20-12",
+      "expected_safe_behavior": "Reject manifest mismatch",
+      "group": "G20",
+      "group_title": "TTL, Kafka retention, backup & disaster restore",
+      "independent_evidence": "Dataset/build/source digest scope",
+      "priority": "P1",
+      "what_if": "Backup file checksum good but wrong dataset version"
+    },
+    {
+      "case_id": "P07-G20-13",
+      "expected_safe_behavior": "Rehearsal fails; no false backup-success",
+      "group": "G20",
+      "group_title": "TTL, Kafka retention, backup & disaster restore",
+      "independent_evidence": "Chain availability and restore log",
+      "priority": "P2",
+      "what_if": "Incremental backup chain missing an intermediate part"
+    },
+    {
+      "case_id": "P07-G20-14",
+      "expected_safe_behavior": "Fail preflight; no production-like optimism",
+      "group": "G20",
+      "group_title": "TTL, Kafka retention, backup & disaster restore",
+      "independent_evidence": "Capacity estimate vs measured free bytes",
+      "priority": "P2",
+      "what_if": "Cold restore onto smaller disk without headroom"
+    },
+    {
+      "case_id": "P07-G21-01",
+      "expected_safe_behavior": "Detect torn record, keep last durable prefix",
+      "group": "G21",
+      "group_title": "Filesystem, crash durability, evidence integrity",
+      "independent_evidence": "Reopen+hash-chain validator",
+      "priority": "P0",
+      "what_if": "OS kills journal writer after partial append"
+    },
+    {
+      "case_id": "P07-G21-02",
+      "expected_safe_behavior": "Crash test may lose marker; no false durability claim",
+      "group": "G21",
+      "group_title": "Filesystem, crash durability, evidence integrity",
+      "independent_evidence": "Power-failure emulation results",
+      "priority": "P0",
+      "what_if": "`rename` used without fsync parent directory"
+    },
+    {
+      "case_id": "P07-G21-03",
+      "expected_safe_behavior": "Stop or mark INCONCLUSIVE; no truncated PASS report",
+      "group": "G21",
+      "group_title": "Filesystem, crash durability, evidence integrity",
+      "independent_evidence": "Disk quota / artifact manifest",
+      "priority": "P0",
+      "what_if": "Evidence volume fills while test still running"
+    },
+    {
+      "case_id": "P07-G21-04",
+      "expected_safe_behavior": "Original read-only baseline unchanged; test classified correctly",
+      "group": "G21",
+      "group_title": "Filesystem, crash durability, evidence integrity",
+      "independent_evidence": "Digest before/after",
+      "priority": "P0",
+      "what_if": "Fault injector corrupts only sealed source copy"
+    },
+    {
+      "case_id": "P07-G21-05",
+      "expected_safe_behavior": "Loss of proof triggers INCONCLUSIVE; redesign failure domains",
+      "group": "G21",
+      "group_title": "Filesystem, crash durability, evidence integrity",
+      "independent_evidence": "Storage topology",
+      "priority": "P1",
+      "what_if": "P05 CH raw and evidence on same failed disk"
+    },
+    {
+      "case_id": "P07-G21-06",
+      "expected_safe_behavior": "Restore based on verified backup/log, not assumption",
+      "group": "G21",
+      "group_title": "Filesystem, crash durability, evidence integrity",
+      "independent_evidence": "Block-device fault evidence",
+      "priority": "P1",
+      "what_if": "Disk reports write ACK but sudden device failure loses data"
+    },
+    {
+      "case_id": "P07-G21-07",
+      "expected_safe_behavior": "Protect source cut/recovery window or NO-GO",
+      "group": "G21",
+      "group_title": "Filesystem, crash durability, evidence integrity",
+      "independent_evidence": "Broker bytes and earliest offsets",
+      "priority": "P1",
+      "what_if": "Low disk space causes Kafka retention pressure"
+    },
+    {
+      "case_id": "P07-G21-08",
+      "expected_safe_behavior": "Fail closed; keep old READY",
+      "group": "G21",
+      "group_title": "Filesystem, crash durability, evidence integrity",
+      "independent_evidence": "IO errors and catalog pointer",
+      "priority": "P1",
+      "what_if": "Filesystem read-only remount mid-replay"
+    },
+    {
+      "case_id": "P07-G21-09",
+      "expected_safe_behavior": "Fail with proper ENOSPC-like error, no hangs",
+      "group": "G21",
+      "group_title": "Filesystem, crash durability, evidence integrity",
+      "independent_evidence": "`df -i` and retry log",
+      "priority": "P1",
+      "what_if": "Inodes exhausted though free disk bytes remain"
+    },
+    {
+      "case_id": "P07-G21-10",
+      "expected_safe_behavior": "Log rate limiting + preserved summary counts",
+      "group": "G21",
+      "group_title": "Filesystem, crash durability, evidence integrity",
+      "independent_evidence": "Artifact size and event counters",
+      "priority": "P1",
+      "what_if": "Unbounded log generation consumes disk ahead of Kafka/CH"
+    },
+    {
+      "case_id": "P07-G21-11",
+      "expected_safe_behavior": "Sanitize, protect artifacts; no data leak",
+      "group": "G21",
+      "group_title": "Filesystem, crash durability, evidence integrity",
+      "independent_evidence": "Artifact secret scan",
+      "priority": "P1",
+      "what_if": "Config/secrets accidentally copied in proof bundle"
+    },
+    {
+      "case_id": "P07-G21-12",
+      "expected_safe_behavior": "Run-scoped namespace / atomic exclusivity",
+      "group": "G21",
+      "group_title": "Filesystem, crash durability, evidence integrity",
+      "independent_evidence": "Artifact IDs and collision check",
+      "priority": "P1",
+      "what_if": "Two parallel tests write same result filename"
+    },
+    {
+      "case_id": "P07-G21-13",
+      "expected_safe_behavior": "Not tamper-evident without external anchor; fail trust assumption",
+      "group": "G21",
+      "group_title": "Filesystem, crash durability, evidence integrity",
+      "independent_evidence": "Anchor mismatch or audit limitation",
+      "priority": "P2",
+      "what_if": "External evidence checksum manifest overwritten by attacker"
+    },
+    {
+      "case_id": "P07-G21-14",
+      "expected_safe_behavior": "Report measurement overhead separately",
+      "group": "G21",
+      "group_title": "Filesystem, crash durability, evidence integrity",
+      "independent_evidence": "A/B benchmarks with collection levels",
+      "priority": "P2",
+      "what_if": "Evidence sync performance reduces data throughput"
+    },
+    {
+      "case_id": "P07-G22-01",
+      "expected_safe_behavior": "P04 holds/retries, bounded queue, upstream truth intact",
+      "group": "G22",
+      "group_title": "Network partitions, DNS, TLS & retry storms",
+      "independent_evidence": "Network fault + lag",
+      "priority": "P0",
+      "what_if": "Kafka producer separated from brokers but P05 can still read"
+    },
+    {
+      "case_id": "P07-G22-02",
+      "expected_safe_behavior": "Ambiguous ACK handled by replay+audit",
+      "group": "G22",
+      "group_title": "Network partitions, DNS, TLS & retry storms",
+      "independent_evidence": "Raw scan and batch attempt ledger",
+      "priority": "P0",
+      "what_if": "P05 loses ClickHouse network after INSERT accepted"
+    },
+    {
+      "case_id": "P07-G22-03",
+      "expected_safe_behavior": "Health tests distinguish asymmetry, no false ACK",
+      "group": "G22",
+      "group_title": "Network partitions, DNS, TLS & retry storms",
+      "independent_evidence": "Network pair probes",
+      "priority": "P0",
+      "what_if": "One-way network partition producer→leader only"
+    },
+    {
+      "case_id": "P07-G22-04",
+      "expected_safe_behavior": "Re-resolve/reconnect within budget or safe halt",
+      "group": "G22",
+      "group_title": "Network partitions, DNS, TLS & retry storms",
+      "independent_evidence": "DNS and client trace",
+      "priority": "P0",
+      "what_if": "DNS points consumer to stale broker address"
+    },
+    {
+      "case_id": "P07-G22-05",
+      "expected_safe_behavior": "Fail auth clearly; no fallback plaintext",
+      "group": "G22",
+      "group_title": "Network partitions, DNS, TLS & retry storms",
+      "independent_evidence": "TLS error + connection audit",
+      "priority": "P1",
+      "what_if": "TLS certificate expires mid-soak test"
+    },
+    {
+      "case_id": "P07-G22-06",
+      "expected_safe_behavior": "Reject connection, protect credentials",
+      "group": "G22",
+      "group_title": "Network partitions, DNS, TLS & retry storms",
+      "independent_evidence": "Handshake failure and config diff",
+      "priority": "P1",
+      "what_if": "TLS CA mismatch after config upgrade"
+    },
+    {
+      "case_id": "P07-G22-07",
+      "expected_safe_behavior": "Ownership fencing and replay correctness",
+      "group": "G22",
+      "group_title": "Network partitions, DNS, TLS & retry storms",
+      "independent_evidence": "Group epoch + raw diff",
+      "priority": "P1",
+      "what_if": "High latency but zero packet loss causes poll timeout/rebalance"
+    },
+    {
+      "case_id": "P07-G22-08",
+      "expected_safe_behavior": "No data loss proof inferred from timeout",
+      "group": "G22",
+      "group_title": "Network partitions, DNS, TLS & retry storms",
+      "independent_evidence": "Kafka exact scan",
+      "priority": "P1",
+      "what_if": "Burst packet loss 50% during Kafka ACK"
+    },
+    {
+      "case_id": "P07-G22-09",
+      "expected_safe_behavior": "Bounded retry backoff, no retry storm",
+      "group": "G22",
+      "group_title": "Network partitions, DNS, TLS & retry storms",
+      "independent_evidence": "Request rate/CPU/queue graph",
+      "priority": "P1",
+      "what_if": "Network flaps every 250ms for 10 minutes"
+    },
+    {
+      "case_id": "P07-G22-10",
+      "expected_safe_behavior": "Unknown outcome not mistaken for failure",
+      "group": "G22",
+      "group_title": "Network partitions, DNS, TLS & retry storms",
+      "independent_evidence": "Proxy trace + readback",
+      "priority": "P1",
+      "what_if": "CH proxy delays response beyond worker deadline"
+    },
+    {
+      "case_id": "P07-G22-11",
+      "expected_safe_behavior": "Preflight target identity/schema prevents write",
+      "group": "G22",
+      "group_title": "Network partitions, DNS, TLS & retry storms",
+      "independent_evidence": "Cluster fingerprint check",
+      "priority": "P1",
+      "what_if": "Wrong endpoint points writer to staging ClickHouse"
+    },
+    {
+      "case_id": "P07-G22-12",
+      "expected_safe_behavior": "Reject cluster switch; cannot reuse old coords",
+      "group": "G22",
+      "group_title": "Network partitions, DNS, TLS & retry storms",
+      "independent_evidence": "Bootstrap cluster ID",
+      "priority": "P1",
+      "what_if": "Broker endpoints reconnect to different cluster ID"
+    },
+    {
+      "case_id": "P07-G22-13",
+      "expected_safe_behavior": "Admission/backoff & FD cap honored",
+      "group": "G22",
+      "group_title": "Network partitions, DNS, TLS & retry storms",
+      "independent_evidence": "FD/connection trends",
+      "priority": "P2",
+      "what_if": "Too many simultaneous reconnects exhaust file descriptors"
+    },
+    {
+      "case_id": "P07-G22-14",
+      "expected_safe_behavior": "Test INVALID, no claimed chaos coverage",
+      "group": "G22",
+      "group_title": "Network partitions, DNS, TLS & retry storms",
+      "independent_evidence": "Packet counters/route proof",
+      "priority": "P2",
+      "what_if": "Proxy injector not actually in data path"
+    },
+    {
+      "case_id": "P07-G23-01",
+      "expected_safe_behavior": "Backpressure and measured achieved rate; no silent loss",
+      "group": "G23",
+      "group_title": "CPU starvation, scheduling & thread failures",
+      "independent_evidence": "CPU throttling + source diff",
+      "priority": "P0",
+      "what_if": "P03 parser CPU quota 5% under 120k offered rate"
+    },
+    {
+      "case_id": "P07-G23-02",
+      "expected_safe_behavior": "Rebalance correctness; no stale commit",
+      "group": "G23",
+      "group_title": "CPU starvation, scheduling & thread failures",
+      "independent_evidence": "Group epoch/CH raw proof",
+      "priority": "P0",
+      "what_if": "P05 worker CPU-starved so heartbeat misses"
+    },
+    {
+      "case_id": "P07-G23-03",
+      "expected_safe_behavior": "Query slows/errors within cap; no wrong result",
+      "group": "G23",
+      "group_title": "CPU starvation, scheduling & thread failures",
+      "independent_evidence": "p95 and equality audit",
+      "priority": "P0",
+      "what_if": "ClickHouse CPU pinned to one core while queries run"
+    },
+    {
+      "case_id": "P07-G23-04",
+      "expected_safe_behavior": "Semantic events unchanged; jitter measured separately",
+      "group": "G23",
+      "group_title": "CPU starvation, scheduling & thread failures",
+      "independent_evidence": "Schedule lag histogram",
+      "priority": "P0",
+      "what_if": "High scheduler jitter makes temporal replay late"
+    },
+    {
+      "case_id": "P07-G23-05",
+      "expected_safe_behavior": "Supervisor records terminal state, replays unfinished batch",
+      "group": "G23",
+      "group_title": "CPU starvation, scheduling & thread failures",
+      "independent_evidence": "Process exit + offset proof",
+      "priority": "P1",
+      "what_if": "Executor worker crashes with uncaught exception"
+    },
+    {
+      "case_id": "P07-G23-06",
+      "expected_safe_behavior": "Watchdog timeouts, no force commit; classify incomplete",
+      "group": "G23",
+      "group_title": "CPU starvation, scheduling & thread failures",
+      "independent_evidence": "Thread dump and frontier",
+      "priority": "P1",
+      "what_if": "One poll-owner thread deadlocks"
+    },
+    {
+      "case_id": "P07-G23-07",
+      "expected_safe_behavior": "Cut deferred until terminal callbacks/scans",
+      "group": "G23",
+      "group_title": "CPU starvation, scheduling & thread failures",
+      "independent_evidence": "Flush/phase trace",
+      "priority": "P1",
+      "what_if": "`SIGTERM` triggers source drain but Kafka producer remains in-flight"
+    },
+    {
+      "case_id": "P07-G23-08",
+      "expected_safe_behavior": "Journal/restart tolerates absent cleanup",
+      "group": "G23",
+      "group_title": "CPU starvation, scheduling & thread failures",
+      "independent_evidence": "Crash receipt + replay result",
+      "priority": "P1",
+      "what_if": "`SIGKILL` bypasses shutdown handlers"
+    },
+    {
+      "case_id": "P07-G23-09",
+      "expected_safe_behavior": "NO-GO until fixed; don't accept output coincidence",
+      "group": "G23",
+      "group_title": "CPU starvation, scheduling & thread failures",
+      "independent_evidence": "TSan/ASan logs",
+      "priority": "P1",
+      "what_if": "Thread sanitizer reports data race in P03/P04"
+    },
+    {
+      "case_id": "P07-G23-10",
+      "expected_safe_behavior": "Adaptive concurrency within cap; rate honest",
+      "group": "G23",
+      "group_title": "CPU starvation, scheduling & thread failures",
+      "independent_evidence": "CPU perf/context-switch",
+      "priority": "P1",
+      "what_if": "Context-switch rate huge due too many workers"
+    },
+    {
+      "case_id": "P07-G23-11",
+      "expected_safe_behavior": "Defer READY, report RTO-CORRECT miss",
+      "group": "G23",
+      "group_title": "CPU starvation, scheduling & thread failures",
+      "independent_evidence": "Build time and status",
+      "priority": "P1",
+      "what_if": "Time budget exceeded for P06 canonical 200M rows"
+    },
+    {
+      "case_id": "P07-G23-12",
+      "expected_safe_behavior": "Mark run contaminated/INVALID benchmark",
+      "group": "G23",
+      "group_title": "CPU starvation, scheduling & thread failures",
+      "independent_evidence": "Host perf/environment fingerprint",
+      "priority": "P1",
+      "what_if": "Host load from unrelated process skews benchmark"
+    },
+    {
+      "case_id": "P07-G23-13",
+      "expected_safe_behavior": "Report profiling vs baseline separately",
+      "group": "G23",
+      "group_title": "CPU starvation, scheduling & thread failures",
+      "independent_evidence": "A/B throughput data",
+      "priority": "P2",
+      "what_if": "Profiling sampling perturbs latency measurements"
+    },
+    {
+      "case_id": "P07-G23-14",
+      "expected_safe_behavior": "System may degrade safely, not claim 120k sustained",
+      "group": "G23",
+      "group_title": "CPU starvation, scheduling & thread failures",
+      "independent_evidence": "Queue slopes and backlog catch-up",
+      "priority": "P2",
+      "what_if": "All cores pegged but queues stay bounded, broker retained"
+    },
+    {
+      "case_id": "P07-G24-01",
+      "expected_safe_behavior": "Hold/reject explicitly, no silent drop",
+      "group": "G24",
+      "group_title": "Memory pressure, backpressure & bounded buffers",
+      "independent_evidence": "Enqueue/reject counters and source diff",
+      "priority": "P0",
+      "what_if": "P04 producer queue fills while Kafka down"
+    },
+    {
+      "case_id": "P07-G24-02",
+      "expected_safe_behavior": "Pause partitions, hard byte cap enforced",
+      "group": "G24",
+      "group_title": "Memory pressure, backpressure & bounded buffers",
+      "independent_evidence": "RSS/queue trace",
+      "priority": "P0",
+      "what_if": "P05 per-TP pending buffers grow with stuck ClickHouse"
+    },
+    {
+      "case_id": "P07-G24-03",
+      "expected_safe_behavior": "NO-GO/INCONCLUSIVE, not READY",
+      "group": "G24",
+      "group_title": "Memory pressure, backpressure & bounded buffers",
+      "independent_evidence": "Query error + catalog state",
+      "priority": "P0",
+      "what_if": "ClickHouse query OOM during bar verification"
+    },
+    {
+      "case_id": "P07-G24-04",
+      "expected_safe_behavior": "Reject before allocation, stable RSS",
+      "group": "G24",
+      "group_title": "Memory pressure, backpressure & bounded buffers",
+      "independent_evidence": "Framer cap monitor",
+      "priority": "P0",
+      "what_if": "P03 receives huge fake frame length"
+    },
+    {
+      "case_id": "P07-G24-05",
+      "expected_safe_behavior": "Design fails memory budget; use external merge/shards",
+      "group": "G24",
+      "group_title": "Memory pressure, backpressure & bounded buffers",
+      "independent_evidence": "Profile RSS + exact diff",
+      "priority": "P1",
+      "what_if": "Verifier loads 200M event objects into a Python dict"
+    },
+    {
+      "case_id": "P07-G24-06",
+      "expected_safe_behavior": "Dedup-aware reconsume; no early commit",
+      "group": "G24",
+      "group_title": "Memory pressure, backpressure & bounded buffers",
+      "independent_evidence": "CH raw + committed frontier",
+      "priority": "P1",
+      "what_if": "OOM kills P05 consumer immediately after CH INSERT"
+    },
+    {
+      "case_id": "P07-G24-07",
+      "expected_safe_behavior": "Test cannot be declared PASS without artifacts",
+      "group": "G24",
+      "group_title": "Memory pressure, backpressure & bounded buffers",
+      "independent_evidence": "Collector exit and missing receipts",
+      "priority": "P1",
+      "what_if": "OOM kills evidence collector only"
+    },
+    {
+      "case_id": "P07-G24-08",
+      "expected_safe_behavior": "Bounded timeout/stop; no hidden event loss",
+      "group": "G24",
+      "group_title": "Memory pressure, backpressure & bounded buffers",
+      "independent_evidence": "Generation vs observed counters",
+      "priority": "P1",
+      "what_if": "Slow downstream makes P01 generator block indefinitely"
+    },
+    {
+      "case_id": "P07-G24-09",
+      "expected_safe_behavior": "Tune fetch/queue caps, recovery remains correct",
+      "group": "G24",
+      "group_title": "Memory pressure, backpressure & bounded buffers",
+      "independent_evidence": "RSS/cgroup+lag",
+      "priority": "P1",
+      "what_if": "Kafka consumer fetch cache exceeds cgroup cap"
+    },
+    {
+      "case_id": "P07-G24-10",
+      "expected_safe_behavior": "Cap labels, use logs for IDs",
+      "group": "G24",
+      "group_title": "Memory pressure, backpressure & bounded buffers",
+      "independent_evidence": "Metric series count",
+      "priority": "P1",
+      "what_if": "High-cardinality metrics labels per symbol/ID exhaust memory"
+    },
+    {
+      "case_id": "P07-G24-11",
+      "expected_safe_behavior": "Soak FAIL above slope budget",
+      "group": "G24",
+      "group_title": "Memory pressure, backpressure & bounded buffers",
+      "independent_evidence": "RSS/heap trend",
+      "priority": "P1",
+      "what_if": "Memory leak emerges only after 6-hour replay"
+    },
+    {
+      "case_id": "P07-G24-12",
+      "expected_safe_behavior": "Incomplete spill does not advance offset",
+      "group": "G24",
+      "group_title": "Memory pressure, backpressure & bounded buffers",
+      "independent_evidence": "Spill manifest/frontier",
+      "priority": "P1",
+      "what_if": "Partial disk-to-memory spill fails"
+    },
+    {
+      "case_id": "P07-G24-13",
+      "expected_safe_behavior": "Candidate DIRTY until independent audit",
+      "group": "G24",
+      "group_title": "Memory pressure, backpressure & bounded buffers",
+      "independent_evidence": "Query log and bar oracle",
+      "priority": "P2",
+      "what_if": "OOM kills ClickHouse mid-materialized-view update"
+    },
+    {
+      "case_id": "P07-G24-14",
+      "expected_safe_behavior": "Report capacity failure, no fake sustained throughput",
+      "group": "G24",
+      "group_title": "Memory pressure, backpressure & bounded buffers",
+      "independent_evidence": "Offered/achieved/queue slopes",
+      "priority": "P2",
+      "what_if": "Memory budget too small for 120k/s"
+    },
+    {
+      "case_id": "P07-G25-01",
+      "expected_safe_behavior": "Connection cap and timeout, no FD exhaustion",
+      "group": "G25",
+      "group_title": "Resource exhaustion: FD, ports, DB parts and quotas",
+      "independent_evidence": "`lsof`/FD metrics",
+      "priority": "P0",
+      "what_if": "P03 opens thousands of idle client connections"
+    },
+    {
+      "case_id": "P07-G25-02",
+      "expected_safe_behavior": "Pool cap and bounded concurrency",
+      "group": "G25",
+      "group_title": "Resource exhaustion: FD, ports, DB parts and quotas",
+      "independent_evidence": "Live connections and RSS",
+      "priority": "P0",
+      "what_if": "P05 worker starts one CH connection per event"
+    },
+    {
+      "case_id": "P07-G25-03",
+      "expected_safe_behavior": "Fail safely, no offset skip",
+      "group": "G25",
+      "group_title": "Resource exhaustion: FD, ports, DB parts and quotas",
+      "independent_evidence": "FD/errno + commit proof",
+      "priority": "P0",
+      "what_if": "Kafka client hits `EMFILE` during reconnect storm"
+    },
+    {
+      "case_id": "P07-G25-04",
+      "expected_safe_behavior": "Backoff/connection reuse; metrics honest",
+      "group": "G25",
+      "group_title": "Resource exhaustion: FD, ports, DB parts and quotas",
+      "independent_evidence": "Socket state counts",
+      "priority": "P0",
+      "what_if": "Port exhaustion under 10k short-lived TCP sessions"
+    },
+    {
+      "case_id": "P07-G25-05",
+      "expected_safe_behavior": "Throttle ingestion, no false completion",
+      "group": "G25",
+      "group_title": "Resource exhaustion: FD, ports, DB parts and quotas",
+      "independent_evidence": "`system.parts`, insert rate",
+      "priority": "P1",
+      "what_if": "ClickHouse active parts explode from tiny batches"
+    },
+    {
+      "case_id": "P07-G25-06",
+      "expected_safe_behavior": "Backlog/part count bounded or controlled stop",
+      "group": "G25",
+      "group_title": "Resource exhaustion: FD, ports, DB parts and quotas",
+      "independent_evidence": "Merge/parts trend",
+      "priority": "P1",
+      "what_if": "CH background merges blocked by disk IO quota"
+    },
+    {
+      "case_id": "P07-G25-07",
+      "expected_safe_behavior": "Orchestrator detects service not started, mark INVALID",
+      "group": "G25",
+      "group_title": "Resource exhaustion: FD, ports, DB parts and quotas",
+      "independent_evidence": "Process namespace and receipt",
+      "priority": "P1",
+      "what_if": "Container PID limit reached during chaos"
+    },
+    {
+      "case_id": "P07-G25-08",
+      "expected_safe_behavior": "Run fingerprint invalidates baseline or triggers safe limit",
+      "group": "G25",
+      "group_title": "Resource exhaustion: FD, ports, DB parts and quotas",
+      "independent_evidence": "Effective cgroup settings",
+      "priority": "P1",
+      "what_if": "Cgroup memory limit changed mid-run"
+    },
+    {
+      "case_id": "P07-G25-09",
+      "expected_safe_behavior": "Stop/error and evaluate recovery source",
+      "group": "G25",
+      "group_title": "Resource exhaustion: FD, ports, DB parts and quotas",
+      "independent_evidence": "Broker disk and offset proof",
+      "priority": "P1",
+      "what_if": "Kafka broker disk quota hit before retention scheduled"
+    },
+    {
+      "case_id": "P07-G25-10",
+      "expected_safe_behavior": "Admission/error only, no partial result called complete",
+      "group": "G25",
+      "group_title": "Resource exhaustion: FD, ports, DB parts and quotas",
+      "independent_evidence": "CH query status vs oracle",
+      "priority": "P1",
+      "what_if": "CH max concurrent query limit reached"
+    },
+    {
+      "case_id": "P07-G25-11",
+      "expected_safe_behavior": "Artifact completeness gate catches lost telemetry",
+      "group": "G25",
+      "group_title": "Resource exhaustion: FD, ports, DB parts and quotas",
+      "independent_evidence": "Collector FD slope",
+      "priority": "P1",
+      "what_if": "Async log collector FD leak"
+    },
+    {
+      "case_id": "P07-G25-12",
+      "expected_safe_behavior": "Avoid deadlock, bounded output drain",
+      "group": "G25",
+      "group_title": "Resource exhaustion: FD, ports, DB parts and quotas",
+      "independent_evidence": "Task watchdog + pipe bytes",
+      "priority": "P1",
+      "what_if": "IPC pipe buffer full in supervisor"
+    },
+    {
+      "case_id": "P07-G25-13",
+      "expected_safe_behavior": "Retry budget and terminal NO-GO",
+      "group": "G25",
+      "group_title": "Resource exhaustion: FD, ports, DB parts and quotas",
+      "independent_evidence": "Attempt counter and timeout",
+      "priority": "P2",
+      "what_if": "Supervisor retries spawning failed containers indefinitely"
+    },
+    {
+      "case_id": "P07-G25-14",
+      "expected_safe_behavior": "Combined failure classification; restore only with proof",
+      "group": "G25",
+      "group_title": "Resource exhaustion: FD, ports, DB parts and quotas",
+      "independent_evidence": "OOM dmesg + ledger+recovery",
+      "priority": "P2",
+      "what_if": "Kernel OOM kills broker and CH together"
+    },
+    {
+      "case_id": "P07-G26-01",
+      "expected_safe_behavior": "Readiness gate and bounded retry; no offset reset",
+      "group": "G26",
+      "group_title": "Orchestration, restart order & lifecycle safety",
+      "independent_evidence": "Dependency readiness and consumer position",
+      "priority": "P0",
+      "what_if": "Recovery starts P05 before Kafka broker ready"
+    },
+    {
+      "case_id": "P07-G26-02",
+      "expected_safe_behavior": "Reject cut; no false READY",
+      "group": "G26",
+      "group_title": "Orchestration, restart order & lifecycle safety",
+      "independent_evidence": "Sink frontier vs build start",
+      "priority": "P0",
+      "what_if": "Recovery starts P06 build while raw still mutating"
+    },
+    {
+      "case_id": "P07-G26-03",
+      "expected_safe_behavior": "Restart from journal, cleanup idempotent/allowlisted",
+      "group": "G26",
+      "group_title": "Orchestration, restart order & lifecycle safety",
+      "independent_evidence": "Recovery receipt + target status",
+      "priority": "P0",
+      "what_if": "Supervisor crashes between fault and cleanup"
+    },
+    {
+      "case_id": "P07-G26-04",
+      "expected_safe_behavior": "Lease/fence one writer, no overlapping unsafe action",
+      "group": "G26",
+      "group_title": "Orchestration, restart order & lifecycle safety",
+      "independent_evidence": "Lease token and command history",
+      "priority": "P0",
+      "what_if": "Two orchestrators control same run_id"
+    },
+    {
+      "case_id": "P07-G26-05",
+      "expected_safe_behavior": "Do not declare recovered until functional probes + data check",
+      "group": "G26",
+      "group_title": "Orchestration, restart order & lifecycle safety",
+      "independent_evidence": "Readiness vs semantic probe",
+      "priority": "P1",
+      "what_if": "Container `Up` but service stuck unhealthy"
+    },
+    {
+      "case_id": "P07-G26-06",
+      "expected_safe_behavior": "Verify label/identity before kill",
+      "group": "G26",
+      "group_title": "Orchestration, restart order & lifecycle safety",
+      "independent_evidence": "Docker inspect+fault receipt",
+      "priority": "P1",
+      "what_if": "Orchestrator uses old Docker service ID after recreation"
+    },
+    {
+      "case_id": "P07-G26-07",
+      "expected_safe_behavior": "Preserve unknown state, attempt cleanup without false commit",
+      "group": "G26",
+      "group_title": "Orchestration, restart order & lifecycle safety",
+      "independent_evidence": "Journal + raw scan",
+      "priority": "P1",
+      "what_if": "Cancel run during P05 CH async ACK unknown"
+    },
+    {
+      "case_id": "P07-G26-08",
+      "expected_safe_behavior": "Verdict engine rejects correctness",
+      "group": "G26",
+      "group_title": "Orchestration, restart order & lifecycle safety",
+      "independent_evidence": "Source expected vs actual",
+      "priority": "P1",
+      "what_if": "Process returns exit code 0 after dropped source events"
+    },
+    {
+      "case_id": "P07-G26-09",
+      "expected_safe_behavior": "Record mixed shutdown, replay uncommitted work",
+      "group": "G26",
+      "group_title": "Orchestration, restart order & lifecycle safety",
+      "independent_evidence": "Signal history and frontier",
+      "priority": "P1",
+      "what_if": "SIGTERM expires and supervisor escalates to SIGKILL"
+    },
+    {
+      "case_id": "P07-G26-10",
+      "expected_safe_behavior": "INCONCLUSIVE with all checkpoints, not PASS",
+      "group": "G26",
+      "group_title": "Orchestration, restart order & lifecycle safety",
+      "independent_evidence": "Timeout reason and artifacts",
+      "priority": "P1",
+      "what_if": "Multiple nested failures cause test deadline expiry"
+    },
+    {
+      "case_id": "P07-G26-11",
+      "expected_safe_behavior": "Validate container ID+namespace, forbid host PID action",
+      "group": "G26",
+      "group_title": "Orchestration, restart order & lifecycle safety",
+      "independent_evidence": "Target identity audit",
+      "priority": "P1",
+      "what_if": "Stale PID recycled to unrelated process"
+    },
+    {
+      "case_id": "P07-G26-12",
+      "expected_safe_behavior": "Cannot claim deterministic recovery; assess source/backup",
+      "group": "G26",
+      "group_title": "Orchestration, restart order & lifecycle safety",
+      "independent_evidence": "Persisted evidence and fallback",
+      "priority": "P1",
+      "what_if": "Power loss lab host returns with no orchestrator journal"
+    },
+    {
+      "case_id": "P07-G26-13",
+      "expected_safe_behavior": "Block unless explicit migration/cut",
+      "group": "G26",
+      "group_title": "Orchestration, restart order & lifecycle safety",
+      "independent_evidence": "Binary/config pins and golden mapping",
+      "priority": "P2",
+      "what_if": "Version update mid-restart changes partitioner/hash"
+    },
+    {
+      "case_id": "P07-G26-14",
+      "expected_safe_behavior": "Test no service-level false success; correct RTO-CORRECT",
+      "group": "G26",
+      "group_title": "Orchestration, restart order & lifecycle safety",
+      "independent_evidence": "Quorum state and full diff",
+      "priority": "P2",
+      "what_if": "Rolling restart across Kafka quorum and CH node"
+    },
+    {
+      "case_id": "P07-G27-01",
+      "expected_safe_behavior": "INVALID boundary test, no ambiguous-ACK PASS",
+      "group": "G27",
+      "group_title": "Fault injector accuracy, validity & random schedules",
+      "independent_evidence": "CH-side marker+proxy timeline",
+      "priority": "P0",
+      "what_if": "Fault intended after CH commit actually happens before request"
+    },
+    {
+      "case_id": "P07-G27-02",
+      "expected_safe_behavior": "INVALID, do not count test",
+      "group": "G27",
+      "group_title": "Fault injector accuracy, validity & random schedules",
+      "independent_evidence": "PID/container exit receipt",
+      "priority": "P0",
+      "what_if": "Kill command targets no live process"
+    },
+    {
+      "case_id": "P07-G27-03",
+      "expected_safe_behavior": "INVALID, verify traffic path",
+      "group": "G27",
+      "group_title": "Fault injector accuracy, validity & random schedules",
+      "independent_evidence": "Proxy connection counters",
+      "priority": "P0",
+      "what_if": "Network proxy test bypassed through direct broker address"
+    },
+    {
+      "case_id": "P07-G27-04",
+      "expected_safe_behavior": "Save actual causal trace, semantic verdict per run",
+      "group": "G27",
+      "group_title": "Fault injector accuracy, validity & random schedules",
+      "independent_evidence": "Trigger order log",
+      "priority": "P0",
+      "what_if": "Fault plan seed reused but scheduler nondeterministic interleaving differs"
+    },
+    {
+      "case_id": "P07-G27-05",
+      "expected_safe_behavior": "INVALID or classify as explicit combined scenario",
+      "group": "G27",
+      "group_title": "Fault injector accuracy, validity & random schedules",
+      "independent_evidence": "Actual fault ledger",
+      "priority": "P1",
+      "what_if": "Injector has race and applies two faults instead of one"
+    },
+    {
+      "case_id": "P07-G27-06",
+      "expected_safe_behavior": "INVALID for intended in-flight boundary",
+      "group": "G27",
+      "group_title": "Fault injector accuracy, validity & random schedules",
+      "independent_evidence": "Cut time vs injector receipt",
+      "priority": "P1",
+      "what_if": "Fault delayed until after Kafka cut"
+    },
+    {
+      "case_id": "P07-G27-07",
+      "expected_safe_behavior": "Retry/reconnect behavior must be observed",
+      "group": "G27",
+      "group_title": "Fault injector accuracy, validity & random schedules",
+      "independent_evidence": "Connection attempts and cut proof",
+      "priority": "P1",
+      "what_if": "Proxy restores network but client connection remains cached broken"
+    },
+    {
+      "case_id": "P07-G27-08",
+      "expected_safe_behavior": "Auto-cleanup watchdog; lab isolation enforced",
+      "group": "G27",
+      "group_title": "Fault injector accuracy, validity & random schedules",
+      "independent_evidence": "Quota state and cleanup receipt",
+      "priority": "P1",
+      "what_if": "Fault injector crashes while disk-full condition remains"
+    },
+    {
+      "case_id": "P07-G27-09",
+      "expected_safe_behavior": "INVALID until effective broker config confirmed",
+      "group": "G27",
+      "group_title": "Fault injector accuracy, validity & random schedules",
+      "independent_evidence": "Broker config readback",
+      "priority": "P1",
+      "what_if": "Injection toggles `minISR` but settings not propagated"
+    },
+    {
+      "case_id": "P07-G27-10",
+      "expected_safe_behavior": "INVALID rebalance test",
+      "group": "G27",
+      "group_title": "Fault injector accuracy, validity & random schedules",
+      "independent_evidence": "Consumer group assignment timeline",
+      "priority": "P1",
+      "what_if": "Test expects P05 rebalance but member remains assigned"
+    },
+    {
+      "case_id": "P07-G27-11",
+      "expected_safe_behavior": "Coverage tool flags poor exploration",
+      "group": "G27",
+      "group_title": "Fault injector accuracy, validity & random schedules",
+      "independent_evidence": "Fault trace diversity report",
+      "priority": "P1",
+      "what_if": "Random chaos schedules different seeds but identical fault target/order"
+    },
+    {
+      "case_id": "P07-G27-12",
+      "expected_safe_behavior": "Oracle inadequate; FAIL mutation coverage",
+      "group": "G27",
+      "group_title": "Fault injector accuracy, validity & random schedules",
+      "independent_evidence": "Mutation test expected red",
+      "priority": "P1",
+      "what_if": "Mutant system with intentionally skipped offset still passes verifier"
+    },
+    {
+      "case_id": "P07-G27-13",
+      "expected_safe_behavior": "Reject config before run",
+      "group": "G27",
+      "group_title": "Fault injector accuracy, validity & random schedules",
+      "independent_evidence": "Target allowlist validation",
+      "priority": "P2",
+      "what_if": "Fault scripts contain destructive host path"
+    },
+    {
+      "case_id": "P07-G27-14",
+      "expected_safe_behavior": "Safety breach, fail and stop run immediately",
+      "group": "G27",
+      "group_title": "Fault injector accuracy, validity & random schedules",
+      "independent_evidence": "Namespace/network membership proof",
+      "priority": "P2",
+      "what_if": "Chaos harness affects external shared network"
+    },
+    {
+      "case_id": "P07-G28-01",
+      "expected_safe_behavior": "Parse as data; deny arbitrary command execution",
+      "group": "G28",
+      "group_title": "Security, unauthorized actions & poisoned data",
+      "independent_evidence": "Parser/runner dry-run security test",
+      "priority": "P0",
+      "what_if": "Untrusted YAML contains shell substitution to delete host path"
+    },
+    {
+      "case_id": "P07-G28-02",
+      "expected_safe_behavior": "Reject cluster allowlist + expected ID mismatch",
+      "group": "G28",
+      "group_title": "Security, unauthorized actions & poisoned data",
+      "independent_evidence": "Broker cluster ID/policy",
+      "priority": "P0",
+      "what_if": "Recovery CLI points to non-lab Kafka cluster"
+    },
+    {
+      "case_id": "P07-G28-03",
+      "expected_safe_behavior": "Deny path outside fixture root",
+      "group": "G28",
+      "group_title": "Security, unauthorized actions & poisoned data",
+      "independent_evidence": "Path canonicalization test",
+      "priority": "P0",
+      "what_if": "Fixture path traversal `../../etc/passwd`"
+    },
+    {
+      "case_id": "P07-G28-04",
+      "expected_safe_behavior": "Cap before parse, no OOM",
+      "group": "G28",
+      "group_title": "Security, unauthorized actions & poisoned data",
+      "independent_evidence": "RSS and error class",
+      "priority": "P0",
+      "what_if": "Malicious Protobuf frame claims 4 GiB allocation"
+    },
+    {
+      "case_id": "P07-G28-05",
+      "expected_safe_behavior": "Deployment gate fails test namespace isolation",
+      "group": "G28",
+      "group_title": "Security, unauthorized actions & poisoned data",
+      "independent_evidence": "ACL audit and attempted write",
+      "priority": "P1",
+      "what_if": "Kafka topic ACL grants test producer write into production-like market topic"
+    },
+    {
+      "case_id": "P07-G28-06",
+      "expected_safe_behavior": "Reject principle-of-least-privilege profile",
+      "group": "G28",
+      "group_title": "Security, unauthorized actions & poisoned data",
+      "independent_evidence": "`SHOW GRANTS`/permission test",
+      "priority": "P1",
+      "what_if": "ClickHouse audit user has DROP DATABASE rights"
+    },
+    {
+      "case_id": "P07-G28-07",
+      "expected_safe_behavior": "TLS fail closed, no downgrade",
+      "group": "G28",
+      "group_title": "Security, unauthorized actions & poisoned data",
+      "independent_evidence": "Handshake packet inspection",
+      "priority": "P1",
+      "what_if": "Expired secrets stored in recovered config trigger plaintext fallback"
+    },
+    {
+      "case_id": "P07-G28-08",
+      "expected_safe_behavior": "Redaction and secret scan, no report PASS if leak",
+      "group": "G28",
+      "group_title": "Security, unauthorized actions & poisoned data",
+      "independent_evidence": "Artifact scanner",
+      "priority": "P1",
+      "what_if": "Run journal includes DB passwords in stack trace"
+    },
+    {
+      "case_id": "P07-G28-09",
+      "expected_safe_behavior": "Strict symbol allowlist; metric cap",
+      "group": "G28",
+      "group_title": "Security, unauthorized actions & poisoned data",
+      "independent_evidence": "Validation and series count",
+      "priority": "P1",
+      "what_if": "Replay injects high-cardinality arbitrary symbol names"
+    },
+    {
+      "case_id": "P07-G28-10",
+      "expected_safe_behavior": "Bound decompressed size and time",
+      "group": "G28",
+      "group_title": "Security, unauthorized actions & poisoned data",
+      "independent_evidence": "Resource/fuzz report",
+      "priority": "P1",
+      "what_if": "Large decompression payload expands beyond cap"
+    },
+    {
+      "case_id": "P07-G28-11",
+      "expected_safe_behavior": "Preserve exact bytes and reject collision assumptions",
+      "group": "G28",
+      "group_title": "Security, unauthorized actions & poisoned data",
+      "independent_evidence": "Unicode/case golden corpus",
+      "priority": "P1",
+      "what_if": "Cross-tenant dataset IDs produce hash collision due normalized case"
+    },
+    {
+      "case_id": "P07-G28-12",
+      "expected_safe_behavior": "Independent pinned oracle code/version + anchor validation",
+      "group": "G28",
+      "group_title": "Security, unauthorized actions & poisoned data",
+      "independent_evidence": "Source-code hash and protected artifact",
+      "priority": "P1",
+      "what_if": "Untrusted test scenario tampers with source oracle output"
+    },
+    {
+      "case_id": "P07-G28-13",
+      "expected_safe_behavior": "Test-only loopback binding and connection cap",
+      "group": "G28",
+      "group_title": "Security, unauthorized actions & poisoned data",
+      "independent_evidence": "Listener bind + network reachability",
+      "priority": "P2",
+      "what_if": "DoS flood hits P03 listener on public interface"
+    },
+    {
+      "case_id": "P07-G28-14",
+      "expected_safe_behavior": "CI gate inventory/hash detects omission",
+      "group": "G28",
+      "group_title": "Security, unauthorized actions & poisoned data",
+      "independent_evidence": "Required test list vs report",
+      "priority": "P2",
+      "what_if": "Attack alters GitHub Action env to skip P0 tests"
+    },
+    {
+      "case_id": "P07-G29-01",
+      "expected_safe_behavior": "Reject counter-only proof",
+      "group": "G29",
+      "group_title": "Metrics, forensics, independent evidence & false positives",
+      "independent_evidence": "Manifest/file event scan",
+      "priority": "P0",
+      "what_if": "P01 says 100k generated but source file sealed only 99k"
+    },
+    {
+      "case_id": "P07-G29-02",
+      "expected_safe_behavior": "FAIL/INCONCLUSIVE; independent scan wins",
+      "group": "G29",
+      "group_title": "Metrics, forensics, independent evidence & false positives",
+      "independent_evidence": "Publisher ledger vs log",
+      "priority": "P0",
+      "what_if": "Kafka producer callback says ACK but Kafka cut missing source ID"
+    },
+    {
+      "case_id": "P07-G29-03",
+      "expected_safe_behavior": "FAIL exact row proof",
+      "group": "G29",
+      "group_title": "Metrics, forensics, independent evidence & false positives",
+      "independent_evidence": "CH scan under cut",
+      "priority": "P0",
+      "what_if": "P05 logs `INSERT OK` but raw lacks row"
+    },
+    {
+      "case_id": "P07-G29-04",
+      "expected_safe_behavior": "FAIL full set diff",
+      "group": "G29",
+      "group_title": "Metrics, forensics, independent evidence & false positives",
+      "independent_evidence": "Sorted ID/digest checks",
+      "priority": "P0",
+      "what_if": "P06 query `COUNT(*)` matches oracle but identity differs"
+    },
+    {
+      "case_id": "P07-G29-05",
+      "expected_safe_behavior": "INVALID fault test",
+      "group": "G29",
+      "group_title": "Metrics, forensics, independent evidence & false positives",
+      "independent_evidence": "Independent broker health timeline",
+      "priority": "P1",
+      "what_if": "Fault injector log says broker down but broker stayed available"
+    },
+    {
+      "case_id": "P07-G29-06",
+      "expected_safe_behavior": "Mark telemetry gap; correctness maybe still proven via exact scans",
+      "group": "G29",
+      "group_title": "Metrics, forensics, independent evidence & false positives",
+      "independent_evidence": "Evidence completeness audit",
+      "priority": "P1",
+      "what_if": "Metric sampling drops most records during OOM"
+    },
+    {
+      "case_id": "P07-G29-07",
+      "expected_safe_behavior": "Use monotonic durations+UTC event timestamps; disclose skew",
+      "group": "G29",
+      "group_title": "Metrics, forensics, independent evidence & false positives",
+      "independent_evidence": "Clock offset probe",
+      "priority": "P1",
+      "what_if": "Host clock drifts relative to container clock"
+    },
+    {
+      "case_id": "P07-G29-08",
+      "expected_safe_behavior": "Reconstruct causal tokens, don't rely wall timestamps only",
+      "group": "G29",
+      "group_title": "Metrics, forensics, independent evidence & false positives",
+      "independent_evidence": "Correlation IDs/stage markers",
+      "priority": "P1",
+      "what_if": "Log ingestion reorders events across processes"
+    },
+    {
+      "case_id": "P07-G29-09",
+      "expected_safe_behavior": "Fail immutable run artifact inventory",
+      "group": "G29",
+      "group_title": "Metrics, forensics, independent evidence & false positives",
+      "independent_evidence": "Run-scoped file IDs + hashes",
+      "priority": "P1",
+      "what_if": "Evidence path reused and prior run overwritten"
+    },
+    {
+      "case_id": "P07-G29-10",
+      "expected_safe_behavior": "Reject ambiguous record coordinate",
+      "group": "G29",
+      "group_title": "Metrics, forensics, independent evidence & false positives",
+      "independent_evidence": "Generation lookup",
+      "priority": "P1",
+      "what_if": "Provenance log has unknown topic generation"
+    },
+    {
+      "case_id": "P07-G29-11",
+      "expected_safe_behavior": "CI recalculates status from signed/pinned artifacts",
+      "group": "G29",
+      "group_title": "Metrics, forensics, independent evidence & false positives",
+      "independent_evidence": "Inventory and artifact digest",
+      "priority": "P1",
+      "what_if": "Human edits test report to mark NOT_RUN as PASS"
+    },
+    {
+      "case_id": "P07-G29-12",
+      "expected_safe_behavior": "Gate disallows incomplete coverage",
+      "group": "G29",
+      "group_title": "Metrics, forensics, independent evidence & false positives",
+      "independent_evidence": "Verification coverage value",
+      "priority": "P1",
+      "what_if": "Sample-only verification accidentally configured in release"
+    },
+    {
+      "case_id": "P07-G29-13",
+      "expected_safe_behavior": "Report measured overhead, rerun reduced-cost mode",
+      "group": "G29",
+      "group_title": "Metrics, forensics, independent evidence & false positives",
+      "independent_evidence": "A/B observer effect",
+      "priority": "P2",
+      "what_if": "Observer adds enough load to cause service failure"
+    },
+    {
+      "case_id": "P07-G29-14",
+      "expected_safe_behavior": "Require stage-aware reason taxonomy",
+      "group": "G29",
+      "group_title": "Metrics, forensics, independent evidence & false positives",
+      "independent_evidence": "Reason code coverage",
+      "priority": "P2",
+      "what_if": "Multiple failures diagnosed under single generic `timeout` code"
+    },
+    {
+      "case_id": "P07-G30-01",
+      "expected_safe_behavior": "Preserve signed exact ns or reject by explicit domain policy",
+      "group": "G30",
+      "group_title": "Timestamp, price, policy & data edge cases",
+      "independent_evidence": "Int64 boundary fixture",
+      "priority": "P0",
+      "what_if": "Timestamp `-1`ns near Unix epoch"
+    },
+    {
+      "case_id": "P07-G30-02",
+      "expected_safe_behavior": "Correct event_date/bar grouping",
+      "group": "G30",
+      "group_title": "Timestamp, price, policy & data edge cases",
+      "independent_evidence": "UTC boundary oracle",
+      "priority": "P0",
+      "what_if": "Event timestamp crosses UTC date from `23:59:59.999999999`"
+    },
+    {
+      "case_id": "P07-G30-03",
+      "expected_safe_behavior": "No overflow in digest/SQL conversion; domain policy gate",
+      "group": "G30",
+      "group_title": "Timestamp, price, policy & data edge cases",
+      "independent_evidence": "Type boundary tests",
+      "priority": "P0",
+      "what_if": "Source price=Int64 max with valid scale"
+    },
+    {
+      "case_id": "P07-G30-04",
+      "expected_safe_behavior": "Reject wrong publish policy",
+      "group": "G30",
+      "group_title": "Timestamp, price, policy & data edge cases",
+      "independent_evidence": "Fault namespace manifest",
+      "priority": "P0",
+      "what_if": "Price negative in fault-only run marked `market_valid`"
+    },
+    {
+      "case_id": "P07-G30-05",
+      "expected_safe_behavior": "Business reject; no normal market publish",
+      "group": "G30",
+      "group_title": "Timestamp, price, policy & data edge cases",
+      "independent_evidence": "P03 policy and Kafka absence",
+      "priority": "P1",
+      "what_if": "Quote bid>ask intentional malformed"
+    },
+    {
+      "case_id": "P07-G30-06",
+      "expected_safe_behavior": "Respect pinned rule; no auto widening spread",
+      "group": "G30",
+      "group_title": "Timestamp, price, policy & data edge cases",
+      "independent_evidence": "Policy version fixture",
+      "priority": "P1",
+      "what_if": "Quote bid==ask valid only if policy permits"
+    },
+    {
+      "case_id": "P07-G30-07",
+      "expected_safe_behavior": "Maintain per-symbol exact scale, no float precision mixing",
+      "group": "G30",
+      "group_title": "Timestamp, price, policy & data edge cases",
+      "independent_evidence": "Canonical/SQL diff",
+      "priority": "P1",
+      "what_if": "Different symbols have different price scales"
+    },
+    {
+      "case_id": "P07-G30-08",
+      "expected_safe_behavior": "Tie-break sequence produces stable bar",
+      "group": "G30",
+      "group_title": "Timestamp, price, policy & data edge cases",
+      "independent_evidence": "Python reference OHLC",
+      "priority": "P1",
+      "what_if": "`event_time_ns` identical across 1,000 ticks of one symbol"
+    },
+    {
+      "case_id": "P07-G30-09",
+      "expected_safe_behavior": "No Kafka-loss false alarm",
+      "group": "G30",
+      "group_title": "Timestamp, price, policy & data edge cases",
+      "independent_evidence": "Independent accept/reject ledger",
+      "priority": "P1",
+      "what_if": "Sequence gap expected only because P03 rejected one event"
+    },
+    {
+      "case_id": "P07-G30-10",
+      "expected_safe_behavior": "Distinguish presence from validation, reject per policy",
+      "group": "G30",
+      "group_title": "Timestamp, price, policy & data edge cases",
+      "independent_evidence": "Optional-bit proof",
+      "priority": "P1",
+      "what_if": "One tick price 0 is optional-present but business-invalid"
+    },
+    {
+      "case_id": "P07-G30-11",
+      "expected_safe_behavior": "Require exact UTF-8 identity policy, no silent normalization",
+      "group": "G30",
+      "group_title": "Timestamp, price, policy & data edge cases",
+      "independent_evidence": "Fixture corpus",
+      "priority": "P1",
+      "what_if": "Unicode-normalized dataset names semantically ambiguous"
+    },
+    {
+      "case_id": "P07-G30-12",
+      "expected_safe_behavior": "Pin policy hash per cut or reject mixed run",
+      "group": "G30",
+      "group_title": "Timestamp, price, policy & data edge cases",
+      "independent_evidence": "Config/version lineage",
+      "priority": "P1",
+      "what_if": "Source config changes `min_spread` midway in run"
+    },
+    {
+      "case_id": "P07-G30-13",
+      "expected_safe_behavior": "Record event-time skew separately, do not rewrite event time",
+      "group": "G30",
+      "group_title": "Timestamp, price, policy & data edge cases",
+      "independent_evidence": "Time oracle/lag metrics",
+      "priority": "P2",
+      "what_if": "A synthetic quote clock runs faster than host"
+    },
+    {
+      "case_id": "P07-G30-14",
+      "expected_safe_behavior": "No mutation of old READY, new cut/audit or idempotent ignore",
+      "group": "G30",
+      "group_title": "Timestamp, price, policy & data edge cases",
+      "independent_evidence": "Catalog pointer immutability",
+      "priority": "P2",
+      "what_if": "Duplicate tick arrives late after a newer READY build"
+    },
+    {
+      "case_id": "P07-G31-01",
+      "expected_safe_behavior": "Report achieved and backlog slope, do not claim 120k",
+      "group": "G31",
+      "group_title": "Capacity, sustained load, burst, catch-up & soak",
+      "independent_evidence": "Source vs Kafka/CH counts per second",
+      "priority": "P0",
+      "what_if": "Offered 120k events/s but achieved only 80k/s"
+    },
+    {
+      "case_id": "P07-G31-02",
+      "expected_safe_behavior": "Catch-up impossible while arrivals continue; report NO-GO capacity",
+      "group": "G31",
+      "group_title": "Capacity, sustained load, burst, catch-up & soak",
+      "independent_evidence": "λ/μ/B trend",
+      "priority": "P0",
+      "what_if": "P05 resumes after 60s outage at μ≤λ"
+    },
+    {
+      "case_id": "P07-G31-03",
+      "expected_safe_behavior": "Queues bound; no silent loss; convergence after burst",
+      "group": "G31",
+      "group_title": "Capacity, sustained load, burst, catch-up & soak",
+      "independent_evidence": "Queue max, sustained drain",
+      "priority": "P0",
+      "what_if": "Burst 2x normal rate for 10s"
+    },
+    {
+      "case_id": "P07-G31-04",
+      "expected_safe_behavior": "Resource isolation/ingest throttle, safe source cut",
+      "group": "G31",
+      "group_title": "Capacity, sustained load, burst, catch-up & soak",
+      "independent_evidence": "CH parts and client lag",
+      "priority": "P0",
+      "what_if": "Broker throughput high but CH parts overload"
+    },
+    {
+      "case_id": "P07-G31-05",
+      "expected_safe_behavior": "External merge/sharding; no sample-only PASS",
+      "group": "G31",
+      "group_title": "Capacity, sustained load, burst, catch-up & soak",
+      "independent_evidence": "Memory+coverage proof",
+      "priority": "P1",
+      "what_if": "P06 200M rows scan exceeds memory"
+    },
+    {
+      "case_id": "P07-G31-06",
+      "expected_safe_behavior": "Leak FAIL according to slope gate",
+      "group": "G31",
+      "group_title": "Capacity, sustained load, burst, catch-up & soak",
+      "independent_evidence": "RSS regression trend",
+      "priority": "P1",
+      "what_if": "Overnight 6h run leaks 1MB/min"
+    },
+    {
+      "case_id": "P07-G31-07",
+      "expected_safe_behavior": "Stop with missing cut, NO-GO",
+      "group": "G31",
+      "group_title": "Capacity, sustained load, burst, catch-up & soak",
+      "independent_evidence": "Earliest-offset progression",
+      "priority": "P1",
+      "what_if": "Soak run reaches Kafka byte retention before audit"
+    },
+    {
+      "case_id": "P07-G31-08",
+      "expected_safe_behavior": "Need headroom/latency evidence; do not infer recovery margin",
+      "group": "G31",
+      "group_title": "Capacity, sustained load, burst, catch-up & soak",
+      "independent_evidence": "Utilization and stress perturbation",
+      "priority": "P1",
+      "what_if": "CPU 100% but consumer lag flat at steady 120k"
+    },
+    {
+      "case_id": "P07-G31-09",
+      "expected_safe_behavior": "FAIL correctness regardless of speed",
+      "group": "G31",
+      "group_title": "Capacity, sustained load, burst, catch-up & soak",
+      "independent_evidence": "Bar oracle + p95",
+      "priority": "P1",
+      "what_if": "p95 query latency improves but OHLC becomes incorrect"
+    },
+    {
+      "case_id": "P07-G31-10",
+      "expected_safe_behavior": "Admission limits or class isolation, no data loss",
+      "group": "G31",
+      "group_title": "Capacity, sustained load, burst, catch-up & soak",
+      "independent_evidence": "Lag, query concurrency",
+      "priority": "P1",
+      "what_if": "Parallel range queries starve P05 ingestion"
+    },
+    {
+      "case_id": "P07-G31-11",
+      "expected_safe_behavior": "Report tick ratio and comparable metric units",
+      "group": "G31",
+      "group_title": "Capacity, sustained load, burst, catch-up & soak",
+      "independent_evidence": "Source event-kind histogram",
+      "priority": "P1",
+      "what_if": "Benchmark dataset has 90% quotes but goal copied as ticks/s"
+    },
+    {
+      "case_id": "P07-G31-12",
+      "expected_safe_behavior": "Correct topology in artifact; invalidate benchmark",
+      "group": "G31",
+      "group_title": "Capacity, sustained load, burst, catch-up & soak",
+      "independent_evidence": "Topic metadata",
+      "priority": "P1",
+      "what_if": "Kafka 8 partitions **per** topic misreported as 8 total"
+    },
+    {
+      "case_id": "P07-G31-13",
+      "expected_safe_behavior": "Reject benchmark methodology and clock error",
+      "group": "G31",
+      "group_title": "Capacity, sustained load, burst, catch-up & soak",
+      "independent_evidence": "Duration+source count",
+      "priority": "P2",
+      "what_if": "Test runner generates only 1k events yet reports 120k/s offered"
+    },
+    {
+      "case_id": "P07-G31-14",
+      "expected_safe_behavior": "Logical correctness after retries, performance qualified",
+      "group": "G31",
+      "group_title": "Capacity, sustained load, burst, catch-up & soak",
+      "independent_evidence": "CH dedup settings and raw audit",
+      "priority": "P2",
+      "what_if": "Long GC pause causes burst inserts, CH dedup window expires"
+    },
+    {
+      "case_id": "P07-G32-01",
+      "expected_safe_behavior": "Independent proof on both boundaries; no offset skip",
+      "group": "G32",
+      "group_title": "Correlated multi-fault, disaster, adversarial combinations",
+      "independent_evidence": "Kafka and CH scans + fault receipts",
+      "priority": "P0",
+      "what_if": "Kafka broker leader dies exactly when CH response ACK lost"
+    },
+    {
+      "case_id": "P07-G32-02",
+      "expected_safe_behavior": "NO-GO if hole unrecoverable; no false commit",
+      "group": "G32",
+      "group_title": "Correlated multi-fault, disaster, adversarial combinations",
+      "independent_evidence": "TP frontier+earliest+disk trace",
+      "priority": "P0",
+      "what_if": "P05 rebalance while ClickHouse disk full and broker retention advancing"
+    },
+    {
+      "case_id": "P07-G32-03",
+      "expected_safe_behavior": "Freeze/abort invalid cut, preserve old READY",
+      "group": "G32",
+      "group_title": "Correlated multi-fault, disaster, adversarial combinations",
+      "independent_evidence": "Catalog and cut lineage",
+      "priority": "P0",
+      "what_if": "P06 canonical rebuild during TTL and Kafka topic generation switch"
+    },
+    {
+      "case_id": "P07-G32-04",
+      "expected_safe_behavior": "RPO scope quantified, not declared zero",
+      "group": "G32",
+      "group_title": "Correlated multi-fault, disaster, adversarial combinations",
+      "independent_evidence": "Source and broker full-range proof",
+      "priority": "P0",
+      "what_if": "Source disk lost while Kafka has only partial replicated log"
+    },
+    {
+      "case_id": "P07-G32-05",
+      "expected_safe_behavior": "Replay from sealed source, classify duplicates/missing",
+      "group": "G32",
+      "group_title": "Correlated multi-fault, disaster, adversarial combinations",
+      "independent_evidence": "P03/Kafka semantic diff",
+      "priority": "P1",
+      "what_if": "P03 SIGKILL during TCP frame while P04 ACK reply lost"
+    },
+    {
+      "case_id": "P07-G32-06",
+      "expected_safe_behavior": "Degrade safely; recover only when quorum/source available",
+      "group": "G32",
+      "group_title": "Correlated multi-fault, disaster, adversarial combinations",
+      "independent_evidence": "Cluster quorum+frontend frontier",
+      "priority": "P1",
+      "what_if": "Two Kafka brokers down and P05 consumer OOM simultaneously"
+    },
+    {
+      "case_id": "P07-G32-07",
+      "expected_safe_behavior": "Fencing commit + canonical uniqueness after heal",
+      "group": "G32",
+      "group_title": "Correlated multi-fault, disaster, adversarial combinations",
+      "independent_evidence": "Epoch/CH/ID multiset",
+      "priority": "P1",
+      "what_if": "Network split causes multiple P05 owners and CH retry duplicates"
+    },
+    {
+      "case_id": "P07-G32-08",
+      "expected_safe_behavior": "Old READY stable; new build or DIRTY",
+      "group": "G32",
+      "group_title": "Correlated multi-fault, disaster, adversarial combinations",
+      "independent_evidence": "UTC bar oracle/catalog history",
+      "priority": "P1",
+      "what_if": "Clock drift and late tick hit old 1m bar during publish CAS"
+    },
+    {
+      "case_id": "P07-G32-09",
+      "expected_safe_behavior": "INCONCLUSIVE; no counterfeit proof",
+      "group": "G32",
+      "group_title": "Correlated multi-fault, disaster, adversarial combinations",
+      "independent_evidence": "Missing evidence gate",
+      "priority": "P1",
+      "what_if": "Evidence collector disk full while CH ACK ambiguous"
+    },
+    {
+      "case_id": "P07-G32-10",
+      "expected_safe_behavior": "Compatibility gate, reject unsafe rollback",
+      "group": "G32",
+      "group_title": "Correlated multi-fault, disaster, adversarial combinations",
+      "independent_evidence": "Descriptor/golden fixtures",
+      "priority": "P1",
+      "what_if": "Rollback to old code with Protobuf schema changed and fresh dataset"
+    },
+    {
+      "case_id": "P07-G32-11",
+      "expected_safe_behavior": "Restore infeasible; trigger NO-GO/RPO impact",
+      "group": "G32",
+      "group_title": "Correlated multi-fault, disaster, adversarial combinations",
+      "independent_evidence": "Restore rehearsal+TTL journal",
+      "priority": "P1",
+      "what_if": "CH backup corrupted while raw TTL deletes source copy"
+    },
+    {
+      "case_id": "P07-G32-12",
+      "expected_safe_behavior": "Bounded resources and honest capacity / terminal recovery verdict",
+      "group": "G32",
+      "group_title": "Correlated multi-fault, disaster, adversarial combinations",
+      "independent_evidence": "Sustained metrics + full diff",
+      "priority": "P1",
+      "what_if": "Random crash loop plus 120k/s burst and query load"
+    },
+    {
+      "case_id": "P07-G32-13",
+      "expected_safe_behavior": "Reject generation/topology ambiguity; no READY",
+      "group": "G32",
+      "group_title": "Correlated multi-fault, disaster, adversarial combinations",
+      "independent_evidence": "Cluster ID and topic metadata proof",
+      "priority": "P2",
+      "what_if": "Controller quorum partition plus Kafka partition remap plus stale cut"
+    },
+    {
+      "case_id": "P07-G32-14",
+      "expected_safe_behavior": "Restore new generation/build; verify full IDs and bars before READY",
+      "group": "G32",
+      "group_title": "Correlated multi-fault, disaster, adversarial combinations",
+      "independent_evidence": "Independent restored source/bar oracle",
+      "priority": "P2",
+      "what_if": "Host-wide power outage wipes broker and CH, but off-host sealed source+backup survive"
+    }
+  ],
+  "e2e": [
+    {
+      "case": "E2E-01",
+      "expected_proof": "Full A=K=W(logical)=C, bars=B_ref",
+      "fault": "Run end-to-end",
+      "fixture": "3 symbols, 10k valid, no faults"
+    },
+    {
+      "case": "E2E-02",
+      "expected_proof": "JSONL same hash; semantic set identical",
+      "fault": "Re-run P01 twice",
+      "fixture": "Same fixture/seed/t0/version"
+    },
+    {
+      "case": "E2E-03",
+      "expected_proof": "Optional presence, prices, ns timestamp identical",
+      "fault": "C++↔Python Protobuf round-trip",
+      "fixture": "Same fixture, 2 runtime implementations"
+    },
+    {
+      "case": "E2E-04",
+      "expected_proof": "Every expected accepted ID once logically",
+      "fault": "Fragmentation/coalescing",
+      "fixture": "100k events, 1/17 byte TCP chunks"
+    },
+    {
+      "case": "E2E-05",
+      "expected_proof": "Expected P03 gap; absence not labelled Kafka loss",
+      "fault": "P01 fault manifest omission",
+      "fixture": "100k events, intentional missing sequence"
+    },
+    {
+      "case": "E2E-06",
+      "expected_proof": "Separate flags, no unknown data modification",
+      "fault": "Stale + feed inactivity",
+      "fixture": "10k quotes with stale timestamps"
+    },
+    {
+      "case": "E2E-07",
+      "expected_proof": "Partial frame rejected, replay restores accepted cut",
+      "fault": "P03 kill mid-frame",
+      "fixture": "100k events"
+    },
+    {
+      "case": "E2E-08",
+      "expected_proof": "Kafka scan classifies ACK uncertain; no false delivered",
+      "fault": "P04 kill after enqueue",
+      "fixture": "100k events"
+    },
+    {
+      "case": "E2E-09",
+      "expected_proof": "Retry may duplicate physical; canonical unique",
+      "fault": "Drop broker ACK response after append",
+      "fixture": "100k events"
+    },
+    {
+      "case": "E2E-10",
+      "expected_proof": "Correct key map, no cross-topic global ordering claim",
+      "fault": "Verify partition routing",
+      "fixture": "100k events, 8+8 TP"
+    },
+    {
+      "case": "E2E-11",
+      "expected_proof": "Durable records proved under actual surviving ISR",
+      "fault": "Kill leader broker",
+      "fixture": "3 brokers, RF3,minISR2"
+    },
+    {
+      "case": "E2E-12",
+      "expected_proof": "Stop/hold, do not weaken durability; resume proof",
+      "fault": "Lose 2 brokers",
+      "fixture": "3 brokers, RF3,minISR2"
+    },
+    {
+      "case": "E2E-13",
+      "expected_proof": "Reconsume from committed frontier; complete data",
+      "fault": "P05 kill before CH INSERT",
+      "fixture": "100k events, Kafka cut sealed"
+    },
+    {
+      "case": "E2E-14",
+      "expected_proof": "Ambiguous ACK, physical dup possible; canonical correct",
+      "fault": "CH commits then proxy drops ACK",
+      "fixture": "100k events, exact CH marker"
+    },
+    {
+      "case": "E2E-15",
+      "expected_proof": "Reconsume duplicates safely, no missing IDs",
+      "fault": "P05 kill after CH ACK before commit",
+      "fixture": "100k, P05 batch 100–1000"
+    },
+    {
+      "case": "E2E-16",
+      "expected_proof": "No stale commit; CH side effects audited",
+      "fault": "Rebalance while worker insert in-flight",
+      "fixture": "2 P05 consumers, 8+8 TP"
+    },
+    {
+      "case": "E2E-17",
+      "expected_proof": "Contiguous frontier never skips unfinished record",
+      "fault": "Delay 1 middle offset of batch",
+      "fixture": "100k events"
+    },
+    {
+      "case": "E2E-18",
+      "expected_proof": "STOP/NO-GO unless verified dedicated DLQ policy",
+      "fault": "Poison Protobuf record in strict topic",
+      "fixture": "100k events"
+    },
+    {
+      "case": "E2E-19",
+      "expected_proof": "Bounded queues; catch-up proof; no silent drop",
+      "fault": "Kafka broker outage 30s + upstream continues",
+      "fixture": "100k valid"
+    },
+    {
+      "case": "E2E-20",
+      "expected_proof": "Explicit NO-GO; no `latest` reset",
+      "fault": "Let required earliest offset expire",
+      "fixture": "Kafka cut nearing retention"
+    },
+    {
+      "case": "E2E-21",
+      "expected_proof": "New coordinates & manifest, exact same logical set",
+      "fault": "Republish lost source to new topic generation",
+      "fixture": "Sealed P01 source survives"
+    },
+    {
+      "case": "E2E-22",
+      "expected_proof": "Raw duplicates classified, canonical 1/ID",
+      "fault": "P04 republish identical IDs",
+      "fixture": "100k events with intentional identical retry"
+    },
+    {
+      "case": "E2E-23",
+      "expected_proof": "CONFLICT/NO-GO, no arbitrary winner",
+      "fault": "Retry altered payload same identity",
+      "fixture": "100k events, conflicting source variants"
+    },
+    {
+      "case": "E2E-24",
+      "expected_proof": "No false gaps due quote events",
+      "fault": "Tick-only Kafka log scan",
+      "fixture": "100k + cross-topic mixed events"
+    },
+    {
+      "case": "E2E-25",
+      "expected_proof": "Exact open/high/low/close/tick_count vs Python",
+      "fault": "Build 1m OHLC snapshots",
+      "fixture": "1M tick rows, no source dup"
+    },
+    {
+      "case": "E2E-26",
+      "expected_proof": "Correct deterministic O/C",
+      "fault": "Tie-break on sequence",
+      "fixture": "1M with same-ns ticks"
+    },
+    {
+      "case": "E2E-27",
+      "expected_proof": "Tick_count not inflated by physical retry",
+      "fault": "Build bars",
+      "fixture": "1M with raw duplicate retry"
+    },
+    {
+      "case": "E2E-28",
+      "expected_proof": "Old READY immutable; new version separately verified",
+      "fault": "New source cut/rebuild",
+      "fixture": "1M, late tick after READY"
+    },
+    {
+      "case": "E2E-29",
+      "expected_proof": "Old pointer remains, no false READY",
+      "fault": "Kill P06 before catalog CAS",
+      "fixture": "Staging candidate ready to publish"
+    },
+    {
+      "case": "E2E-30",
+      "expected_proof": "Readback resolves outcome and idempotent retry",
+      "fault": "Kill after pointer commit before client ACK",
+      "fixture": "P06 pointer CAS in-flight"
+    },
+    {
+      "case": "E2E-31",
+      "expected_proof": "CAS/single-writer gate; readers see one build per query",
+      "fault": "Race to publish",
+      "fixture": "Two P06 builders"
+    },
+    {
+      "case": "E2E-32",
+      "expected_proof": "Full identity & bars oracle equal, DDL pinned",
+      "fault": "Backup+restore to clean lab",
+      "fixture": "ClickHouse source fixture backup"
+    },
+    {
+      "case": "E2E-33",
+      "expected_proof": "Missing raw triggers NO-GO, no finished audit",
+      "fault": "Short TTL during audit in isolated lab",
+      "fixture": "CH raw near TTL window"
+    },
+    {
+      "case": "E2E-34",
+      "expected_proof": "Bounded queue, no early commit, eventual reconcile",
+      "fault": "Disk-full CH volume while P05 writes",
+      "fixture": "1M events"
+    },
+    {
+      "case": "E2E-35",
+      "expected_proof": "Rebalance + replay + canonical correct",
+      "fault": "P05 OOM after CH request",
+      "fixture": "1M events"
+    },
+    {
+      "case": "E2E-36",
+      "expected_proof": "Bounded retries, no false ACK, recovered cut exact",
+      "fault": "Network 50% packet loss for 60s",
+      "fixture": "1M events"
+    },
+    {
+      "case": "E2E-37",
+      "expected_proof": "Verdict INVALID, not PASS",
+      "fault": "Fault injector fails to apply intended fault",
+      "fixture": "1M events"
+    },
+    {
+      "case": "E2E-38",
+      "expected_proof": "INCONCLUSIVE, not fabricated correctness",
+      "fault": "Delete/expire source evidence intentionally",
+      "fixture": "1M events"
+    },
+    {
+      "case": "E2E-39",
+      "expected_proof": "Achieved throughput & sustained backlog, exact diff",
+      "fault": "1k→10k→50k→120k events/s + queries",
+      "fixture": "10M–200M depending hardware"
+    },
+    {
+      "case": "E2E-40",
+      "expected_proof": "All receipts; zero false READY, complete recovery proof",
+      "fault": "Leader fail + CH ACK drop + P05 rebalance",
+      "fixture": "1M+ valid, 3-broker lab"
+    }
+  ],
+  "groups": [
+    {
+      "group": "G01",
+      "title": "Source manifest, dataset seal & provenance"
+    },
+    {
+      "group": "G02",
+      "title": "Replay seeds, logical time & reproducibility"
+    },
+    {
+      "group": "G03",
+      "title": "Protobuf, presence, schema skew & semantic digest"
+    },
+    {
+      "group": "G04",
+      "title": "TCP segmentation, framing & stream replay"
+    },
+    {
+      "group": "G05",
+      "title": "P03 sequence tracker, acceptance policy & gaps"
+    },
+    {
+      "group": "G06",
+      "title": "Stale quotes, event time & feed inactivity"
+    },
+    {
+      "group": "G07",
+      "title": "C++ Kafka producer enqueue, ACK & retry ambiguity"
+    },
+    {
+      "group": "G08",
+      "title": "Kafka keys, partitions, topology and cross-topic ordering"
+    },
+    {
+      "group": "G09",
+      "title": "Kafka broker, leader, ISR & cluster failure"
+    },
+    {
+      "group": "G10",
+      "title": "Kafka retention, offset range & replay feasibility"
+    },
+    {
+      "group": "G11",
+      "title": "Consumer group rebalance, assignment epoch & stale workers"
+    },
+    {
+      "group": "G12",
+      "title": "P05 batches, worker queues & partial progress"
+    },
+    {
+      "group": "G13",
+      "title": "ClickHouse INSERT ACK ambiguity & server visibility"
+    },
+    {
+      "group": "G14",
+      "title": "Kafka offset commits, ordering & atomicity gaps"
+    },
+    {
+      "group": "G15",
+      "title": "Idempotency, duplicates & retries across all layers"
+    },
+    {
+      "group": "G16",
+      "title": "Semantic identity conflicts & malformed records"
+    },
+    {
+      "group": "G17",
+      "title": "P06 raw audit, canonical set & snapshot-cut integrity"
+    },
+    {
+      "group": "G18",
+      "title": "OHLC aggregation, incremental MV & late data"
+    },
+    {
+      "group": "G19",
+      "title": "P06 publish gate, READY pointer, crash and rollback"
+    },
+    {
+      "group": "G20",
+      "title": "TTL, Kafka retention, backup & disaster restore"
+    },
+    {
+      "group": "G21",
+      "title": "Filesystem, crash durability, evidence integrity"
+    },
+    {
+      "group": "G22",
+      "title": "Network partitions, DNS, TLS & retry storms"
+    },
+    {
+      "group": "G23",
+      "title": "CPU starvation, scheduling & thread failures"
+    },
+    {
+      "group": "G24",
+      "title": "Memory pressure, backpressure & bounded buffers"
+    },
+    {
+      "group": "G25",
+      "title": "Resource exhaustion: FD, ports, DB parts and quotas"
+    },
+    {
+      "group": "G26",
+      "title": "Orchestration, restart order & lifecycle safety"
+    },
+    {
+      "group": "G27",
+      "title": "Fault injector accuracy, validity & random schedules"
+    },
+    {
+      "group": "G28",
+      "title": "Security, unauthorized actions & poisoned data"
+    },
+    {
+      "group": "G29",
+      "title": "Metrics, forensics, independent evidence & false positives"
+    },
+    {
+      "group": "G30",
+      "title": "Timestamp, price, policy & data edge cases"
+    },
+    {
+      "group": "G31",
+      "title": "Capacity, sustained load, burst, catch-up & soak"
+    },
+    {
+      "group": "G32",
+      "title": "Correlated multi-fault, disaster, adversarial combinations"
+    }
+  ],
+  "note": "This inventory is the set of cases the design enumerates. It is NOT a set of results: a case with no execution is NOT_RUN.",
+  "source_document": "PROJECT_07_Deterministic_Replay_and_Failure_Recovery_System_Design.md",
+  "totals": {
+    "cases": 448,
+    "e2e": 40,
+    "groups": 32,
+    "p0": 128,
+    "p1": 256,
+    "p2": 64
+  }
+}

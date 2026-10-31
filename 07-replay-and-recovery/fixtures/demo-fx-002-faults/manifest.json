@@ -1,0 +1,71 @@
+{
+  "config_resolved": {
+    "data": {
+      "count": 1200,
+      "fault_plan_fingerprint": "1e9eb59488760ef9",
+      "faults_enabled": true,
+      "generator_version": "fixture.1",
+      "quote_ratio_pct": 80,
+      "schema_version": "sim.v1",
+      "seed": 20261030,
+      "start_time_ns": 1793322000000000000,
+      "symbol_order": [
+        "EURUSD",
+        "GBPUSD",
+        "USDJPY"
+      ],
+      "symbols": [
+        {
+          "initial_price_ticks": 108347,
+          "max_price_ticks": 120000,
+          "max_spread_ticks": 5,
+          "max_step_ticks": 8,
+          "min_price_ticks": 100000,
+          "min_spread_ticks": 1,
+          "price_scale": 100000,
+          "symbol": "EURUSD",
+          "weight": 3
+        },
+        {
+          "initial_price_ticks": 126540,
+          "max_price_ticks": 140000,
+          "max_spread_ticks": 8,
+          "max_step_ticks": 10,
+          "min_price_ticks": 115000,
+          "min_spread_ticks": 1,
+          "price_scale": 100000,
+          "symbol": "GBPUSD",
+          "weight": 2
+        },
+        {
+          "initial_price_ticks": 151234,
+          "max_price_ticks": 160000,
+          "max_spread_ticks": 6,
+          "max_step_ticks": 12,
+          "min_price_ticks": 140000,
+          "min_spread_ticks": 1,
+          "price_scale": 1000,
+          "symbol": "USDJPY",
+          "weight": 1
+        }
+      ]
+    }
+  },
+  "config_sha256": "2087d66827957c2805be1fcd09f8a82849b815d4526c3e6aeeba209bf6a5c359",
+  "dataset_id": "demo-fx-002",
+  "fault_plan_fingerprint": "1e9eb59488760ef9",
+  "faults_enabled": true,
+  "faults_planned": 5,
+  "logical_start_time_ns": 1793322000000000000,
+  "mode": "record",
+  "planned_logical_slots": 1200,
+  "run_instance_id": "demo-fx-002-faults",
+  "runtime": {
+    "generator_version": "fixture.1",
+    "platform": "p07-test-fixture",
+    "python_implementation": "CPython",
+    "schema_version": "sim.v1"
+  },
+  "schema_version": "sim.v1",
+  "seed": 20261030
+}

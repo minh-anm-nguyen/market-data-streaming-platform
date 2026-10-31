@@ -1,0 +1,48 @@
+# Business-anomaly fault plan used as the Project 02 fault_passthrough fixture.
+# Every entry produces a per-event value that violates a business invariant while
+# staying structurally valid sim.v1 JSON -- exactly the class Project 02 must
+# preserve byte-for-byte under fault_passthrough and reject under strict_normal.
+
+[[fault]]
+kind = "invalid_price"
+symbol = "EURUSD"
+sequence = 150
+price_ticks = -1
+
+[[fault]]
+kind = "invalid_price"
+symbol = "EURUSD"
+sequence = 250
+price_ticks = 0
+
+[[fault]]
+kind = "invalid_spread"
+symbol = "GBPUSD"
+sequence = 180
+
+[[fault]]
+kind = "stale_timestamp"
+symbol = "USDJPY"
+sequence = 120
+offset_ms = 5000
+
+[[fault]]
+kind = "timestamp_future"
+symbol = "EURUSD"
+sequence = 350
+offset_ms = 86400000
+
+[[fault]]
+kind = "missing_sequence"
+symbol = "EURUSD"
+sequence = 100
+
+[[fault]]
+kind = "duplicate_exact"
+symbol = "GBPUSD"
+sequence = 200
+
+[[fault]]
+kind = "reorder_adjacent"
+symbol = "EURUSD"
+sequence = 401

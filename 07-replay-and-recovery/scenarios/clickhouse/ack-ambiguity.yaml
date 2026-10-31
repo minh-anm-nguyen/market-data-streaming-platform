@@ -1,0 +1,23 @@
+# E2E-14: ClickHouse commits the batch and then the reply is lost. The retry may
+# write a second physical row; the canonical build must still be exactly one row
+# per identity and the bars must match the reference.
+version: p07.scenario.v1
+scenario_id: p07-ch-ack-ambiguity-001
+test_case_id: E2E-14
+description: INSERT commits, then the acknowledgement is dropped.
+profile: unit-model
+source:
+  run_dir: fixtures/demo-fx-001
+  anchor_sha256: 76d4fe09bcda705baba62dce731ac982a603c867369d72e05f254b2dc0149880
+replay:
+  chunk_sizes: [4096]
+faults:
+  - type: ch_ack_loss
+    target: clickhouse_ingest
+expect:
+  verdict: PASS
+  require_published: true
+  allow_physical_duplicates: true
+  require_zero_conflicts: true
+limits:
+  max_scenario_duration_s: 120

@@ -1,0 +1,89 @@
+# RELIABILITY-LAB profile (spec section 2.3).
+#
+# Kafka KRaft 3 brokers RF=3 minISR=2, plus a replicated ClickHouse test
+# topology. This is the only profile in which a failover, ISR or replica-lag
+# claim may be made -- and only for the topology and settings actually
+# measured, not as a general HA statement.
+#
+# STATUS: NOT RUN. No multi-broker lab was available. Every reliability claim
+# scoped to this profile remains NOT_RUN (see docs/TEST_REPORT.md section 4).
+
+[project]
+project = "p05"
+mode = "market_valid"
+run_id = "p05-rel-001"
+topic_generation = "md-v1-generation-a"
+source_manifest = "fixtures/golden/manifest.json"
+
+[kafka]
+bootstrap_servers = "kafka-1:9092,kafka-2:9092,kafka-3:9092"
+group_id = "md-p05-rel-v1"
+topics = ["md.ticks.v1", "md.quotes.v1"]
+enable_auto_commit = false
+enable_auto_offset_store = false
+auto_offset_reset = "error"
+allow_auto_create_topics = false
+isolation_level = "read_committed"
+session_timeout_ms = 10000
+max_poll_interval_ms = 300000
+queued_max_messages_kbytes = 16384
+poll_timeout_ms = 100
+cluster_id = "reliability-lab"
+
+[contracts]
+protobuf_package = "marketdata.v1"
+protobuf_descriptor_sha256 = "e17bf37b0384e521ee4a65392ab4778405aacfc06355215e6ac8d0c5adff0cbc"
+max_record_value_bytes = 4096
+max_key_bytes = 32
+max_headers_total_bytes = 512
+max_dataset_id_bytes = 128
+strict_symbol_ascii = true
+strict_market_validation = true
+allowed_source_schema_versions = []
+ticks_topic = "md.ticks.v1"
+quotes_topic = "md.quotes.v1"
+
+[batch]
+# Smaller batches than dev, so a failover lands mid-flight more often and the
+# ambiguous-ACK path is exercised rather than skipped past.
+per_partition_max_rows = 1000
+per_partition_max_serialized_bytes = 1048576
+max_wait_ms = 1000
+max_inflight_batches_per_partition = 1
+max_inflight_batches_global = 4
+app_buffer_budget_bytes = 67108864
+pause_high_watermark = 0.80
+resume_low_watermark = 0.50
+
+[clickhouse]
+host = "clickhouse-1"
+port = 8123
+database = "md_ingest"
+table = "market_events_raw"
+user_env = "P05_CH_USER"
+password_env = "P05_CH_PASSWORD"
+secure = true                       # not a local lab, so TLS is required
+connect_timeout_s = 3
+insert_timeout_s = 10
+async_insert = false
+wait_for_async_insert = true
+deduplicate_insert = "enable"
+schema_version = "raw-v1"
+
+[retry]
+max_attempts = 5
+initial_backoff_ms = 100
+max_backoff_ms = 3000
+overall_deadline_s = 30
+jitter_seed = 20261030
+
+[quarantine]
+mode = "stop"
+
+[shutdown]
+drain_timeout_s = 30
+hard_exit_on_incomplete = true
+
+[tests]
+fault_plan = "fixtures/faults/none.json"
+require_independent_reconciliation_for_go = true

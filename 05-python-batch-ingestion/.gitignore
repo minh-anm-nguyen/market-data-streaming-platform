@@ -1,0 +1,25 @@
+# Run artifacts. Reports are evidence for one run and are regenerated, not
+# versioned; nothing here should be trusted as a committed claim.
+artifacts/*
+!artifacts/.gitkeep
+
+# Local state produced by the crash scenario harness.
+**/rows.jsonl
+**/offsets.json
+**/marker
+
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.hypothesis/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+build/
+dist/
+.venv/
+
+# Generated protobuf bindings are committed on purpose: the descriptor hash is
+# pinned against them, so regenerating must be a visible, reviewed change.
+!src/p05_ingest/generated/*.py

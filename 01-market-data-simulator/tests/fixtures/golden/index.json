@@ -1,0 +1,116 @@
+{
+  "cases": [
+    {
+      "count": 500,
+      "counts": {
+        "emitted_events": 500,
+        "fsynced_events": 500,
+        "intentional_duplicates": 0,
+        "intentional_mutations": 0,
+        "intentional_omissions": 0,
+        "intentional_reorders": 0,
+        "logical_slots": 500,
+        "reconcile_formula": "emitted == slots - omissions + duplicates",
+        "reconciles": true,
+        "recorded_events": 500
+      },
+      "data_sha256": "d69a28593bb7ab24cfd958660a0b4dd919ec1e1eb35cf2eb21bef81ee8a73eab",
+      "dataset_id": "ds-d69a28593bb7ab24",
+      "events_bytes": 103654,
+      "events_lines": 500,
+      "events_sha256": "0545a801008a5ffe0347909ef4fb44c225c40b419403854286908903ff9ddf47",
+      "fault_plan_fingerprint": "none",
+      "faults": [],
+      "name": "normal"
+    },
+    {
+      "count": 500,
+      "counts": {
+        "emitted_events": 501,
+        "fsynced_events": 501,
+        "intentional_duplicates": 2,
+        "intentional_mutations": 1,
+        "intentional_omissions": 1,
+        "intentional_reorders": 0,
+        "logical_slots": 500,
+        "reconcile_formula": "emitted == slots - omissions + duplicates",
+        "reconciles": true,
+        "recorded_events": 501
+      },
+      "data_sha256": "bf346ec5bb15a129dd7653536f5b3c77239f2a963d78f69a263326b5d8cd06bc",
+      "dataset_id": "ds-bf346ec5bb15a129",
+      "events_bytes": 103844,
+      "events_lines": 501,
+      "events_sha256": "cf3c40956efc2f742071b39ae636f1ac288a57fd182f0239c86082eadf954471",
+      "fault_plan_fingerprint": "262a92302ad8790d",
+      "faults": [
+        {
+          "kind": "missing_sequence",
+          "sequence": 100,
+          "symbol": "EURUSD"
+        },
+        {
+          "kind": "duplicate_exact",
+          "sequence": 50,
+          "symbol": "GBPUSD"
+        },
+        {
+          "kind": "duplicate_conflict",
+          "sequence": 20,
+          "symbol": "USDJPY"
+        }
+      ],
+      "name": "gaps_duplicates"
+    },
+    {
+      "count": 500,
+      "counts": {
+        "emitted_events": 500,
+        "fsynced_events": 500,
+        "intentional_duplicates": 0,
+        "intentional_mutations": 2,
+        "intentional_omissions": 0,
+        "intentional_reorders": 1,
+        "logical_slots": 500,
+        "reconcile_formula": "emitted == slots - omissions + duplicates",
+        "reconciles": true,
+        "recorded_events": 500
+      },
+      "data_sha256": "b9caf336462b8c5a5e16160ca4b4c410485aa0a64c314c1982cbfe5a7e712e57",
+      "dataset_id": "ds-b9caf336462b8c5a",
+      "events_bytes": 103654,
+      "events_lines": 500,
+      "events_sha256": "ff74e1188f2a6e94af5336a8d76e6c0ea581ad8538b285ce52ddec1bf0934400",
+      "fault_plan_fingerprint": "022331d8ccad64a5",
+      "faults": [
+        {
+          "kind": "stale_timestamp",
+          "offset_ms": 2000,
+          "sequence": 30,
+          "symbol": "USDJPY"
+        },
+        {
+          "kind": "reorder_adjacent",
+          "sequence": 60,
+          "symbol": "EURUSD"
+        },
+        {
+          "kind": "timestamp_future",
+          "offset_ms": 500,
+          "sequence": 40,
+          "symbol": "GBPUSD"
+        },
+        {
+          "kind": "invalid_spread",
+          "sequence": 90,
+          "symbol": "EURUSD"
+        }
+      ],
+      "name": "stale_reorder"
+    }
+  ],
+  "generator_version": "gen.1",
+  "note": "Golden fixtures. Regenerate with scripts/make_golden.py only when a byte change is intended, and bump GENERATOR_VERSION in the same commit.",
+  "prng": "splitmix64",
+  "schema_version": "sim.v1"
+}

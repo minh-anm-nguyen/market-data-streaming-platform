@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<!--
+  Server overrides for the local test lab. Dev-lab assumptions, not tuning
+  advice: every number here must be re-pinned per host and recorded in the
+  benchmark report (NFR-07, NFR-12).
+-->
+<clickhouse>
+    <!-- UTC, so a host in a local zone cannot make partitions drift (case D-04). -->
+    <timezone>UTC</timezone>
+
+    <!--
+      query_log on, because the group Z diagnostics read it. An empty query_log
+      is not evidence that nothing was slow (section 11), so it has to be
+      enabled explicitly rather than assumed.
+    -->
+    <query_log>
+        <database>system</database>
+        <table>query_log</table>
+        <flush_interval_milliseconds>1000</flush_interval_milliseconds>
+    </query_log>
+    <part_log>
+        <database>system</database>
+        <table>part_log</table>
+        <flush_interval_milliseconds>1000</flush_interval_milliseconds>
+    </part_log>
+
+    <profiles>
+        <default>
+            <!--
+              Synchronous inserts. P05's durability contract depends on knowing
+              whether a write landed, and async_insert turns an acknowledgement
+              into "queued", which is exactly the ambiguity section 5.2 refuses
+              to build on (case AA-08).
+            -->
+            <async_insert>0</async_insert>
+            <wait_for_async_insert>1</wait_for_async_insert>
+
+            <!-- Bounded by default; the query service tightens per request. -->
+            <max_execution_time>30</max_execution_time>
+            <max_result_rows>1000000</max_result_rows>
+            <result_overflow_mode>throw</result_overflow_mode>
+
+            <!--
+              Mutations run to completion, so a drop_build() is observable by the
+              time it returns. Asynchronous mutations would make a rebuild test
+              race against the server.
+            -->
+            <mutations_sync>2</mutations_sync>
+
+            <!-- 64-bit integers cross the HTTP boundary as strings (case I-11). -->
+            <output_format_json_quote_64bit_integers>1</output_format_json_quote_64bit_integers>
+        </default>
+    </profiles>
+</clickhouse>

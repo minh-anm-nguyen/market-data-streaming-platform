@@ -1,0 +1,62 @@
+# P07 lab configuration -- design section 14.1.
+#
+# Read with p07.yamlite (a strict YAML subset: no anchors, tags, flow mappings
+# or multiple documents). Validate with:  python -m p07 validate-config config/replay-lab.yaml
+#
+# The switches under `reconciliation` and `safety` are the ones that decide
+# whether a PASS means anything. `validate-config` exits non-zero if any of them
+# is set to the weaker value, because a lab that accepts sampled passes or
+# tolerates semantic conflicts is not testing what P07 exists to test.
+version: p07.scenario.v1
+
+lab:
+  name: market-data-p07-model
+  # The in-process model lab. There is no compose project and no cluster to
+  # name, because nothing here can reach one -- see p07/dataplane/__init__.py.
+  allowlisted_compose_project: none-model-profile
+  allowlisted_cluster_ids: [lab-cluster-1]
+  protect_host_network: true
+  forbid_external_destructive_actions: true
+
+source:
+  require_sealed_manifest: true
+  verify_manifest_hash: true
+  # Anchors live outside the run directory on purpose: a bundle that vouches for
+  # itself proves nothing (design 5.1, case P07-G01-03).
+  require_external_anchor: true
+  fixture_root: ./fixtures/
+  mode: source_replay
+
+contracts:
+  protobuf_package: marketdata.v1
+  kafka_tick_topic: md.ticks.v1
+  kafka_quote_topic: md.quotes.v1
+  expected_partitions_per_topic: 8
+  kafka_record_payload: raw_protobuf_no_mdp1
+  semantic_digest: P05-CORE-V1
+  expected_identity: [dataset_id, symbol, sequence]
+
+limits:
+  max_parallel_faults: 2
+  max_scenario_duration_s: 600
+  # P05's Kafka value cap. P03's TCP frame cap is a separate budget.
+  max_event_value_bytes: 4096
+  evidence_max_bytes: 1073741824
+  max_retries_per_stage: 10
+  require_bounded_queues: true
+
+reconciliation:
+  full_identity_scan: true
+  require_source_policy_oracle: true
+  accept_physical_duplicates: true
+  allow_semantic_conflicts: false
+  allow_missing: false
+  allow_extra: false
+  require_ohlc_comparison: true
+  allow_sample_only_pass: false
+
+safety:
+  auto_offset_reset: none
+  forbid_auto_topic_creation: true
+  publishing_requires_ready_catalog: true
+  crash_cleanup_required: true

@@ -1,0 +1,95 @@
+# CAPACITY-LAB profile (spec section 2.3).
+#
+# 8+8 partitions, N group members, tuned ClickHouse storage. Used for the rate
+# ladder, part pressure, backpressure and long soak.
+#
+# STATUS: NOT RUN. CAPACITY_GO is NOT_RUN. The figures in
+# docs/TEST_REPORT.md come from the in-memory fakes and explicitly exclude the
+# ClickHouse round trip, so they are not a capacity envelope.
+#
+# Do not read a rate from this file. A requested rate is an input; the achieved
+# rate is whatever the measurement says, and it needs the run manifest from
+# tools/benchmark.py beside it to mean anything.
+
+[project]
+project = "p05"
+mode = "market_valid"
+run_id = "p05-cap-001"
+topic_generation = "md-v1-generation-a"
+source_manifest = "fixtures/golden/manifest.json"
+
+[kafka]
+bootstrap_servers = "kafka-1:9092,kafka-2:9092,kafka-3:9092"
+group_id = "md-p05-cap-v1"
+topics = ["md.ticks.v1", "md.quotes.v1"]
+enable_auto_commit = false
+enable_auto_offset_store = false
+auto_offset_reset = "error"
+allow_auto_create_topics = false
+isolation_level = "read_committed"
+session_timeout_ms = 10000
+# Wider than dev: a capacity run deliberately pushes the sink toward its
+# latency ceiling, and a rebalance storm would corrupt the measurement.
+max_poll_interval_ms = 600000
+queued_max_messages_kbytes = 65536
+poll_timeout_ms = 50
+cluster_id = "capacity-lab"
+
+[contracts]
+protobuf_package = "marketdata.v1"
+protobuf_descriptor_sha256 = "e17bf37b0384e521ee4a65392ab4778405aacfc06355215e6ac8d0c5adff0cbc"
+max_record_value_bytes = 4096
+max_key_bytes = 32
+max_headers_total_bytes = 512
+max_dataset_id_bytes = 128
+strict_symbol_ascii = true
+strict_market_validation = true
+allowed_source_schema_versions = []
+ticks_topic = "md.ticks.v1"
+quotes_topic = "md.quotes.v1"
+
+[batch]
+# Larger batches to reduce part creation. The inserts-versus-parts trade-off is
+# the thing being measured here, so these are starting points to sweep, not
+# tuned values (spec 10.3).
+per_partition_max_rows = 20000
+per_partition_max_serialized_bytes = 16777216
+max_wait_ms = 2000
+max_inflight_batches_per_partition = 1
+max_inflight_batches_global = 8
+app_buffer_budget_bytes = 268435456
+pause_high_watermark = 0.80
+resume_low_watermark = 0.50
+
+[clickhouse]
+host = "clickhouse-1"
+port = 8123
+database = "md_ingest"
+table = "market_events_raw"
+user_env = "P05_CH_USER"
+password_env = "P05_CH_PASSWORD"
+secure = true
+connect_timeout_s = 5
+insert_timeout_s = 30
+async_insert = false
+wait_for_async_insert = true
+deduplicate_insert = "enable"
+schema_version = "raw-v1"
+
+[retry]
+max_attempts = 5
+initial_backoff_ms = 200
+max_backoff_ms = 5000
+overall_deadline_s = 60
+jitter_seed = 20261030
+
+[quarantine]
+mode = "stop"
+
+[shutdown]
+drain_timeout_s = 60
+hard_exit_on_incomplete = true
+
+[tests]
+fault_plan = "fixtures/faults/none.json"
+require_independent_reconciliation_for_go = true

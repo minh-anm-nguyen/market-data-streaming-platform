@@ -1,0 +1,6 @@
+{
+  "expected_fault_confirmations": {},
+  "faults": [],
+  "note": "The no-fault plan. A scenario that injects nothing must still declare that explicitly, so a run cannot be mistaken for a fault test that happened to pass (spec 9.1).",
+  "plan_id": "none"
+}

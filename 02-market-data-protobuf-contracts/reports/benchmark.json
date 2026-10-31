@@ -1,0 +1,295 @@
+{
+  "command": "benchmark",
+  "ladder": {
+    "definition": "max sustained rate = highest paced target where completed encode+decode+validate reached 95% of target with zero rejections; higher targets are not attempted once a rung fails. The open-loop ceiling is the unpaced rate on this machine and bounds every target.",
+    "duration_s_per_step": 3.0,
+    "environment": {
+      "cpu_count": 8,
+      "machine": "AMD64",
+      "platform": "Windows-11-10.0.26200-SP0",
+      "processor": "Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",
+      "python_protobuf_implementation": "upb",
+      "python_protobuf_runtime_version": "7.35.1",
+      "python_version": "3.14.4",
+      "toolchain_lock": {
+        "cpp_protobuf_runtime_version": "35.1.0",
+        "cxx_compiler": "g++.exe (Rev5, Built by MSYS2 project) 16.1.0",
+        "descriptor_v1_sha256": "0e6fc2b28a56b6817075dac8a2e7731d6b2685ce0acbfd7e46811c9bbdaab1fb",
+        "proto_v1_1_sha256": "4fce411e2d3e040479886b41e76356e5174432575e83e86701293ec4f254ea5e",
+        "proto_v1_sha256": "c4542ad763be42f87c4c475d5beb140879561cb1a6a9393ca29dcb4bb9959cd4",
+        "proto_v2_probe_sha256": "5864d204679dec39a3a2fad87d8a52c15ec67908610eacfa5e2ad2d3a823c384",
+        "protoc_version": "35.1",
+        "python_protobuf_implementation": "upb",
+        "python_protobuf_runtime_version": "7.35.1",
+        "python_version": "3.14.4"
+      }
+    },
+    "lane_note": "this ladder measures the in-process Python encode+decode+validate round trip only; it excludes JSON parsing, file I/O, framing and any network path, so it is not an end-to-end platform throughput figure",
+    "max_sustained_events_per_sec": 1000,
+    "max_sustained_verdict": "ESTABLISHED",
+    "open_loop_ceiling": {
+      "achieved_events_per_sec": 41800.8,
+      "achieved_events_per_sec_max": 41800.8,
+      "achieved_events_per_sec_median": 28892.3,
+      "achieved_events_per_sec_min": 18580.5,
+      "duration_s": 3.001,
+      "end_to_end_us": {
+        "count": 7840,
+        "dropped": 0,
+        "exact": true,
+        "max": 3129.999851807952,
+        "mean": 22.606682376841047,
+        "min": 12.299977242946625,
+        "p50": 17.700018361210823,
+        "p95": 25.19995905458927,
+        "p99": 88.58795044943665
+      },
+      "events_completed": 125440,
+      "events_rejected": 0,
+      "queue_peak_bytes": 0,
+      "queue_peak_events": 0,
+      "rss_mb": 39.60546875,
+      "target_events_per_sec": 0,
+      "trials": 3,
+      "verdict": "MEASURED"
+    },
+    "pacing": {
+      "median_sleep_granularity_s": 0.021829,
+      "note": "batches are paced one per tick; the granularity figure is a diagnostic and is not used to decide any verdict",
+      "tick_s": 0.05
+    },
+    "steps": [
+      {
+        "achieved_events_per_sec": 994.0,
+        "duration_s": 3.018,
+        "end_to_end_us": {
+          "count": 187,
+          "dropped": 0,
+          "exact": true,
+          "max": 188.29992040991783,
+          "mean": 23.449742469319048,
+          "min": 14.499993994832039,
+          "p50": 18.900027498602867,
+          "p95": 51.92996468394994,
+          "p99": 103.0980702489613
+        },
+        "events_completed": 3000,
+        "events_rejected": 0,
+        "queue_peak_bytes": 0,
+        "queue_peak_events": 0,
+        "rss_mb": 39.6171875,
+        "target_events_per_sec": 1000,
+        "verdict": "PASS"
+      },
+      {
+        "achieved_events_per_sec": 5472.1,
+        "duration_s": 3.015,
+        "end_to_end_us": {
+          "count": 1031,
+          "dropped": 0,
+          "exact": true,
+          "max": 23053.29986847937,
+          "mean": 213.52852215027485,
+          "min": 13.899989426136017,
+          "p50": 18.700025975704193,
+          "p95": 50.19991658627987,
+          "p99": 9719.570074230442
+        },
+        "events_completed": 16500,
+        "events_rejected": 0,
+        "queue_peak_bytes": 0,
+        "queue_peak_events": 0,
+        "rss_mb": 39.6171875,
+        "target_events_per_sec": 10000,
+        "verdict": "DEGRADED"
+      }
+    ],
+    "targets_above_measured_ceiling": [],
+    "targets_not_run": [
+      50000,
+      120000
+    ]
+  },
+  "lane_results": {
+    "environment": {
+      "cpu_count": 8,
+      "machine": "AMD64",
+      "platform": "Windows-11-10.0.26200-SP0",
+      "processor": "Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",
+      "python_protobuf_implementation": "upb",
+      "python_protobuf_runtime_version": "7.35.1",
+      "python_version": "3.14.4",
+      "toolchain_lock": {
+        "cpp_protobuf_runtime_version": "35.1.0",
+        "cxx_compiler": "g++.exe (Rev5, Built by MSYS2 project) 16.1.0",
+        "descriptor_v1_sha256": "0e6fc2b28a56b6817075dac8a2e7731d6b2685ce0acbfd7e46811c9bbdaab1fb",
+        "proto_v1_1_sha256": "4fce411e2d3e040479886b41e76356e5174432575e83e86701293ec4f254ea5e",
+        "proto_v1_sha256": "c4542ad763be42f87c4c475d5beb140879561cb1a6a9393ca29dcb4bb9959cd4",
+        "proto_v2_probe_sha256": "5864d204679dec39a3a2fad87d8a52c15ec67908610eacfa5e2ad2d3a823c384",
+        "protoc_version": "35.1",
+        "python_protobuf_implementation": "upb",
+        "python_protobuf_runtime_version": "7.35.1",
+        "python_version": "3.14.4"
+      }
+    },
+    "lanes": [
+      {
+        "description": "Python typed objects -> Protobuf encode (in memory)",
+        "duration_s": 0.033368,
+        "events_completed": 5000,
+        "events_per_sec_all_trials": [
+          110086.1,
+          147931.6,
+          149842.8,
+          142535.8,
+          139111.9
+        ],
+        "events_per_sec_max": 149842.8,
+        "events_per_sec_median": 142535.8,
+        "events_per_sec_min": 110086.1,
+        "events_per_sec_spread_ratio": 1.36,
+        "events_rejected": 0,
+        "lane": "B1",
+        "latency_sampled_every": 16,
+        "latency_us": {
+          "count": 313,
+          "dropped": 0,
+          "exact": true,
+          "max": 51.79992876946926,
+          "mean": 6.453031465744439,
+          "min": 4.899920895695686,
+          "p50": 6.00004568696022,
+          "p95": 6.800051778554916,
+          "p99": 23.304075002670253
+        },
+        "notes": [],
+        "payload_bytes": {
+          "count": 5000,
+          "dropped": 0,
+          "exact": true,
+          "max": 64,
+          "mean": 62.9612,
+          "min": 58,
+          "p50": 64.0,
+          "p95": 64.0,
+          "p99": 64.0
+        },
+        "rss_available": true,
+        "rss_mb_after": 32.34375,
+        "rss_mb_before": 32.33984375,
+        "trials": 5
+      },
+      {
+        "description": "Prebuilt Protobuf bytes -> Python decode + envelope check (in memory)",
+        "duration_s": 0.060206,
+        "events_completed": 5000,
+        "events_per_sec_all_trials": [
+          82891.5,
+          83047.6,
+          82202.5,
+          79881.3,
+          79582.4
+        ],
+        "events_per_sec_max": 83047.6,
+        "events_per_sec_median": 82202.5,
+        "events_per_sec_min": 79582.4,
+        "events_per_sec_spread_ratio": 1.04,
+        "events_rejected": 0,
+        "lane": "B2",
+        "latency_sampled_every": 16,
+        "latency_us": {
+          "count": 313,
+          "dropped": 0,
+          "exact": true,
+          "max": 42.00008697807789,
+          "mean": 11.796161484794494,
+          "min": 8.19982960820198,
+          "p50": 11.19985245168209,
+          "p95": 14.779996126890177,
+          "p99": 25.404049083590504
+        },
+        "notes": [],
+        "payload_bytes": null,
+        "rss_available": true,
+        "rss_mb_after": 32.46484375,
+        "rss_mb_before": 32.46484375,
+        "trials": 5
+      },
+      {
+        "description": "sim.v1 JSONL -> strict parse -> encode -> .pbstream -> decode + validate",
+        "duration_s": 1.127291,
+        "events_completed": 5000,
+        "events_per_sec_all_trials": [
+          3977.2,
+          4435.4
+        ],
+        "events_per_sec_max": 4435.4,
+        "events_per_sec_median": 4206.3,
+        "events_per_sec_min": 3977.2,
+        "events_per_sec_spread_ratio": 1.12,
+        "events_rejected": 0,
+        "lane": "B5",
+        "latency_sampled_every": 1,
+        "latency_us": null,
+        "notes": [
+          "includes JSON parsing, file I/O and framing; not comparable with B1/B2"
+        ],
+        "payload_bytes": {
+          "count": 5000,
+          "dropped": 0,
+          "exact": true,
+          "max": 64,
+          "mean": 62.9612,
+          "min": 58,
+          "p50": 64.0,
+          "p95": 64.0,
+          "p99": 64.0
+        },
+        "rss_available": true,
+        "rss_mb_after": 36.0625,
+        "rss_mb_before": 35.56640625,
+        "trials": 2
+      },
+      {
+        "description": "Malformed/mixed corpus: cost of safely rejecting bad input",
+        "duration_s": 0.131047,
+        "events_completed": 10400,
+        "events_per_sec_all_trials": [
+          79361.1,
+          77872.4,
+          77067.5,
+          76321.3,
+          59639.1
+        ],
+        "events_per_sec_max": 79361.1,
+        "events_per_sec_median": 77067.5,
+        "events_per_sec_min": 59639.1,
+        "events_per_sec_spread_ratio": 1.33,
+        "events_rejected": 400,
+        "lane": "B8",
+        "latency_sampled_every": 1,
+        "latency_us": null,
+        "notes": [
+          "'events' counts frames examined; 'rejected' is the share refused"
+        ],
+        "payload_bytes": null,
+        "rss_available": true,
+        "rss_mb_after": 36.09765625,
+        "rss_mb_before": 36.0625,
+        "trials": 5
+      }
+    ],
+    "lanes_not_run": {
+      "B3": "C++ encode in-memory -- measured by the C++ tools, not this runner",
+      "B4": "C++ decode in-memory -- measured by the C++ tools, not this runner",
+      "B6": "C++ encode -> framed TCP -> Python decode -- needs the TCP harness",
+      "B7": "covered by B5 for the Python path"
+    },
+    "measurement_note": "each lane's headline figure is the MEDIAN of its trials, with min, max and the spread ratio beside it. A spread ratio well above 1.0 means this machine's rate varies between identical runs, and a single-run number from it should not be quoted",
+    "repeat": 1,
+    "sample_events": 5000,
+    "trials": 5
+  },
+  "ok": true,
+  "source": "../01-market-data-simulator/runs/smoke-rec-1/events.jsonl"
+}

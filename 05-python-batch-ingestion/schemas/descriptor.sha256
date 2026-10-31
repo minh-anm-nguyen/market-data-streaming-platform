@@ -1,0 +1,2 @@
+e17bf37b0384e521ee4a65392ab4778405aacfc06355215e6ac8d0c5adff0cbc  serialized FileDescriptorProto (marketdata.v1, schemas/market_data.proto)
+374a54fde68601c110745137c21393d82e3c4f4056c6b48ab23e44b9040bdc7f  schemas/market_data.desc (protoc --descriptor_set_out)

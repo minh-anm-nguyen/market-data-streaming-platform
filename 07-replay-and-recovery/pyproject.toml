@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "p07-replay-recovery"
+version = "0.1.0"
+description = "Deterministic replay, fault injection and reconciliation harness for the market-data pipeline (test lab only)"
+requires-python = ">=3.12"
+dependencies = ["protobuf>=5"]
+
+[project.optional-dependencies]
+test = ["pytest>=8", "hypothesis>=6", "psutil>=5.9"]
+# Real-broker profiles. Unusable without a running lab; see README "Deployment profiles".
+lab = ["confluent-kafka>=2", "clickhouse-connect>=0.7"]
+
+[project.scripts]
+p07 = "p07.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["p07*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+# P07 has no async code. The option is set anyway because pytest-asyncio emits a
+# DeprecationWarning at startup when it is unset, and `filterwarnings = error`
+# below turns that into a collection failure.
+asyncio_default_fixture_loop_scope = "function"
+markers = [
+    "slow: takes more than a few seconds",
+    "perf: throughput or latency measurement, not a correctness assertion",
+    "soak: long-running resource-growth test",
+    "chaos: injects a fault into the simulated data plane",
+    "model: nondeterministic state-machine exploration",
+    "security: hostile input or lab-containment test",
+    "e2e: end-to-end case from section 11 of the design",
+    "needs_real_lab: requires a real Kafka broker and ClickHouse server",
+    "whatif: carries what-if matrix case ids via the `cases` argument",
+]
+filterwarnings = ["error::DeprecationWarning"]

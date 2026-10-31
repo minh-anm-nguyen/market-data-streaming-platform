@@ -1,0 +1,100 @@
+# Project 03 adapter configuration.
+#
+# Every key here is known to the binary. Unknown keys are a startup error, not
+# a warning: a typo in a threshold must never degrade silently into a default.
+#
+# Run `md_adapter --config config/example.toml --check-config` to validate
+# without processing anything.
+
+[identity]
+protocol = "MDP1"
+proto_package = "marketdata.v1"
+source_schema_version = "sim.v1"
+# Pin this to the digest printed by `md_adapter --print-descriptor` once the
+# Project 02 contract is frozen. "UNPINNED" starts with a loud warning.
+expected_descriptor_sha256 = "3363eeedf3cc832b7e61a282c9f40d4fa8e2e1acb92ef13bcb4cb43ceb72de7e"
+allowed_symbols = ["EURUSD", "GBPUSD", "USDJPY"]
+max_symbols = 256
+max_datasets = 4
+# Total budget for per-key sequence state. One key costs roughly
+# sequence_window * 48 bytes, so 4096 slots is about 196 KiB per key -- the
+# per-symbol bitmap figure alone would understate this by ~400x.
+max_state_bytes = 67108864
+
+[input]
+mode = "pbstream"                 # pbstream | tcp
+file = "fixtures/normal/golden.pbstream"
+require_completed_manifest = true
+host = "127.0.0.1"
+port = 9010                       # MDP1 protobuf. 9009 is P01 JSONL and is rejected.
+max_payload_bytes = 4096
+read_chunk_bytes = 65536
+max_frames_per_iteration = 256
+connect_deadline_ms = 3000
+prefix_deadline_ms = 2000
+header_partial_deadline_ms = 2000
+body_deadline_ms = 2000
+idle_timeout_ms = 0               # 0 = a legitimately quiet feed may idle at a frame boundary
+allow_non_loopback = false
+
+[validation]
+mode = "strict_monitor"           # strict_monitor | fault_observe | offline_verify
+fault_manifest = ""               # required when mode = fault_observe
+max_dataset_id_bytes = 128
+max_symbol_bytes = 32
+max_source_version_bytes = 32
+sequence_window = 4096
+on_business_reject = "skip_with_reason"
+on_malformed_frame = "fail_closed"
+reject_unknown_fields = false
+
+[prices.EURUSD]
+price_scale = 100000
+min_price_ticks = 1
+max_price_ticks = 500000
+min_spread_ticks = 0
+max_spread_ticks = 200
+
+[prices.GBPUSD]
+price_scale = 100000
+min_price_ticks = 1
+max_price_ticks = 500000
+min_spread_ticks = 0
+max_spread_ticks = 200
+
+[prices.USDJPY]
+price_scale = 1000
+min_price_ticks = 1
+max_price_ticks = 500000
+min_spread_ticks = 0
+max_spread_ticks = 200
+
+[freshness]
+event_time_stale_threshold_ns = 2000000000
+quote_inactivity_threshold_ms = 3000
+timer_tick_ms = 100
+clock_mode = "virtual_for_replay"  # offline only; a live run must use monotonic_live
+
+[output]
+sink = "ndjson_test"              # metrics_only | ndjson_test | p04_stub
+max_queue_events = 4096
+max_queue_bytes = 8388608
+pause_read_high_watermark_pct = 80
+resume_read_low_watermark_pct = 40
+output_stall_deadline_ms = 5000
+shutdown_drain_deadline_ms = 5000
+file = "out/adapter_events.ndjson"
+stub_delay_us = 0                 # test-only; p04_stub sink; echoed into the report
+
+[reconnect]
+initial_backoff_ms = 100
+max_backoff_ms = 10000
+max_attempts = 50
+continue_dataset_within_process = true
+jitter_seed = 0
+jitter_pct = 20
+
+[benchmark]
+target_events_per_sec = [1000, 10000, 50000, 120000]
+report_interval_ms = 1000
+sample_processing_latency = true

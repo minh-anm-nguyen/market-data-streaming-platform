@@ -1,0 +1,93 @@
+# LOCAL-DEV lab (spec section 2.3): one Kafka broker, one ClickHouse node, one
+# consumer. Enough to exercise correctness, crash recovery and the real client
+# libraries.
+#
+# This is NOT an HA topology and proves nothing about failover, replica lag,
+# quorum or disaster survival. Those need the RELIABILITY-LAB profile
+# (3 brokers, RF=3, minISR=2, replicated ClickHouse), which is a separate file
+# precisely so that a reliability claim cannot be made from this one.
+#
+#   docker compose -f deployment/docker-compose.dev.yml up -d
+#   docker compose -f deployment/docker-compose.dev.yml exec clickhouse \
+#       clickhouse-client --multiquery < sql/001_create_raw_table.sql
+#   python -m p05_ingest doctor --config config/dev.toml --live
+#   pytest -m kafka_clickhouse
+
+services:
+  kafka:
+    # KRaft mode: no ZooKeeper. Version pinned, because callback semantics and
+    # rebalance behaviour are exactly what the live tests are checking.
+    image: confluentinc/cp-kafka:7.7.1
+    container_name: p05-kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,CONTROLLER://0.0.0.0:29093,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      CLUSTER_ID: p05devclusterid000001
+      # RF=1 because there is one broker. Stated explicitly so nobody reads
+      # durability into this lab.
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      # The consumer config sets allow.auto.create.topics=false, but the broker
+      # must refuse it too: a typo in a topic name has to fail, not create an
+      # empty topic that reads as an empty dataset.
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+
+  kafka-topics:
+    # Creates the two contract topics with 8 partitions each, matching the
+    # benchmark topology in the spec.
+    image: confluentinc/cp-kafka:7.7.1
+    container_name: p05-kafka-topics
+    depends_on:
+      kafka:
+        condition: service_healthy
+    command: >
+      bash -c "
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists
+        --topic md.ticks.v1 --partitions 8 --replication-factor 1 &&
+      kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists
+        --topic md.quotes.v1 --partitions 8 --replication-factor 1 &&
+      kafka-topics --bootstrap-server kafka:29092 --list
+      "
+    restart: "no"
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8
+    container_name: p05-clickhouse
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    environment:
+      CLICKHOUSE_DB: md_ingest
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+      # Mounted read-only: the DDL is applied by the operator, never by the
+      # ingestion program.
+      - ../sql:/sql:ro
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  clickhouse-data:

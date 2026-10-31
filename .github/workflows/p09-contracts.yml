@@ -1,0 +1,218 @@
+# P09 M9: the gate that keeps the cross-project contract from drifting.
+#
+# The audit's finding P09-M0-02 is that four copies of the wire schema agree
+# today and nothing in the build makes them keep agreeing. This workflow is the
+# thing that makes them keep agreeing: it fails the pull request the moment a
+# copy diverges, a topic is renamed on one side only, or a descriptor pin stops
+# matching the schema it claims to describe.
+#
+# It deliberately runs no infrastructure. Everything here is a contract check
+# over the repository, so it needs no broker, no server and no C++ toolchain,
+# and it finishes in seconds. The stages that need a live stack belong to the
+# reliability and capacity labs, which are a separate, operator-triggered
+# exercise (P09 sections 2.2 and 12).
+
+name: P09 contracts
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    name: cross-project contract audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          # The version P09 and its siblings declare. Pinned to a minor, because
+          # a 3.13 runner would change which syntax is accepted without anything
+          # in the repository changing.
+          python-version: '3.12'
+
+      - name: Install P09
+        working-directory: 09-full-system-integration
+        run: |
+          python -m pip install --upgrade pip
+          # protobuf is needed to derive the per-project descriptor pins, and is
+          # pinned to the version P02's toolchain/versions.lock records.
+          python -m pip install -e ".[test]" protobuf==7.35.1
+
+      - name: Unit and negative-control suite
+        working-directory: 09-full-system-integration
+        run: python -m pytest -q
+
+      - name: Contract audit
+        working-directory: 09-full-system-integration
+        run: |
+          mkdir -p reports
+          # Exit 1 means findings are outstanding, which is the normal state
+          # while blockers are open, so the audit is reported rather than used as
+          # the gate. The checks after it are the gate.
+          python -m p09_integration audit --verbose --report reports/audit.json || true
+          python - <<'PY'
+          import json, sys
+          report = json.load(open("reports/audit.json"))
+          counts = report["counts"]
+          print("verdict:", report["verdict"])
+          print("checks: %d run, %d agreed" % (counts["checks"], counts["passed"]))
+          by_severity = counts["unresolved_by_severity"]
+          print("outstanding:", by_severity)
+          # A baseline, so a NEW blocker fails the build while the known ones are
+          # still open. Lower it by fixing something; never raise it to go green.
+          allowed_blockers = 2
+          if by_severity["BLOCKER"] > allowed_blockers:
+              print("::error::%d blockers, baseline allows %d"
+                    % (by_severity["BLOCKER"], allowed_blockers))
+              sys.exit(1)
+          PY
+
+      - name: Schema has one source of truth
+        working-directory: 09-full-system-integration
+        # Finding P09-M0-02. The consumers' schema copies are generated
+        # artifacts; this is what makes "they agree" enforced rather than
+        # observed. Exit 3 means one drifted: edit only the canonical schema and
+        # run `p09 sync-schema --write`.
+        run: python -m p09_integration sync-schema
+
+      - name: Release preflight
+        working-directory: 09-full-system-integration
+        # Gate G0. Fails while any image is pinned by tag rather than digest,
+        # because a tag can be repushed and two hosts would then run different
+        # bytes under one release record.
+        run: python -m p09_integration preflight
+
+      - name: Lock is current
+        working-directory: 09-full-system-integration
+        # Exit 3 means the stored lock no longer matches the tree. That is the
+        # drift this workflow exists to catch: regenerate it in the pull request
+        # so a change to the contract is reviewable as a diff.
+        run: python -m p09_integration contracts-lock --check
+
+      - name: No cross-project identity drift
+        working-directory: 09-full-system-integration
+        # The lock can be current while a project moved underneath it, so this
+        # re-probes the tree and compares every shared identity.
+        run: python -m p09_integration contracts-verify
+
+      - name: Generated artifacts are reproducible
+        working-directory: 09-full-system-integration
+        # The init jobs and the pipeline runner are generated from the lock. If a
+        # re-render produces different bytes, someone hand-edited a generated
+        # file and the next render would silently revert their change.
+        run: |
+          python -m p09_integration render-init
+          python -m p09_integration render-pipeline
+          if ! git diff --exit-code -- compose/init compose/pipeline; then
+            echo "::error::generated artifacts differ from a fresh render"
+            echo "run 'make render-init render-pipeline' and commit the result"
+            exit 1
+          fi
+
+      - name: Generated shell is valid
+        working-directory: 09-full-system-integration
+        run: |
+          for script in compose/init/*.sh compose/pipeline/*.sh; do
+            sh -n "$script" || exit 1
+            echo "ok $script"
+          done
+
+      - name: Compose config parses and leaks no secrets
+        working-directory: 09-full-system-integration
+        # FR-01. `config` resolves and validates the file; the grep is a crude
+        # backstop for a credential pasted into the lab config, which NFR-09
+        # forbids. It is not a secret scanner and does not claim to be.
+        run: |
+          docker compose -f compose/compose.dev.yaml config --quiet
+          if docker compose -f compose/compose.dev.yaml config \
+               | grep -nEi '(password|secret|token|api[_-]?key)[[:space:]]*[:=][[:space:]]*[^"[:space:]]+'; then
+            echo "::error::a non-empty credential appears in the rendered compose config"
+            exit 1
+          fi
+          echo "compose config clean"
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p09-contract-evidence
+          path: |
+            09-full-system-integration/reports/audit.json
+            09-full-system-integration/contracts/contracts.lock.yaml
+          retention-days: 30
+
+  negative-control:
+    name: the suite can actually fail
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install P09
+        working-directory: 09-full-system-integration
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[test]" protobuf==7.35.1
+
+      # P09 FR-13. A green suite is only evidence if it could have been red, so
+      # these steps break the code on purpose and require the tests to notice.
+      # If this job passes while a mutation is in place, the tests are decoration
+      # and every other green in this pipeline means nothing.
+      - name: Mutation 1 - a FAIL finding stops producing NO_GO
+        working-directory: 09-full-system-integration
+        run: |
+          python - <<'PY'
+          import pathlib
+          path = pathlib.Path("src/p09_integration/deploy.py")
+          text = path.read_text(encoding="utf-8")
+          before = '    if any(f.verdict == "FAIL" for f in findings):'
+          assert before in text, "mutation target moved; update this control"
+          path.write_text(text.replace(before, "    if False:"), encoding="utf-8")
+          print("mutated deploy.compare_infra")
+          PY
+          if python -m pytest -q >/dev/null 2>&1; then
+            echo "::error::the suite passed with a broken verdict rule"
+            exit 1
+          fi
+          echo "the suite caught the mutation"
+          git checkout -- src/p09_integration/deploy.py
+
+      - name: Mutation 2 - the schema normal form stops distinguishing types
+        working-directory: 09-full-system-integration
+        run: |
+          python - <<'PY'
+          import pathlib
+          path = pathlib.Path("src/p09_integration/protoparse.py")
+          text = path.read_text(encoding="utf-8")
+          head = '        return "field %d %s %s %s oneof=%s opts=%s" % ('
+          args = "            self.number, self.type, self.name, self.label,"
+          assert head in text and args in text, "mutation target moved"
+          # Drop the type from the canonical form, so int64 -> uint64 becomes
+          # invisible: exactly the breaking change protoc also lets through.
+          text = text.replace(head, '        return "field %d %s %s oneof=%s opts=%s" % (')
+          text = text.replace(args, "            self.number, self.name, self.label,")
+          path.write_text(text, encoding="utf-8")
+          print("mutated protoparse.Field.canonical")
+          PY
+          if python -m pytest -q >/dev/null 2>&1; then
+            echo "::error::the suite passed while a field type change was invisible"
+            exit 1
+          fi
+          echo "the suite caught the mutation"
+          git checkout -- src/p09_integration/protoparse.py
+
+      - name: Suite is green again
+        working-directory: 09-full-system-integration
+        run: python -m pytest -q

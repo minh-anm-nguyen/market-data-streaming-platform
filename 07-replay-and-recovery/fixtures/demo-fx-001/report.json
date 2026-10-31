@@ -1,0 +1,29 @@
+{
+  "counts": {
+    "emitted_events": 2000,
+    "intentional_duplicates": 0,
+    "intentional_omissions": 0,
+    "logical_slots": 2000
+  },
+  "dataset_id": "demo-fx-001",
+  "faults": {
+    "applied": 0,
+    "enabled": false,
+    "planned": 0,
+    "records": []
+  },
+  "file": {
+    "commit": {
+      "completed_marker": true,
+      "directory_fsync": false,
+      "directory_fsync_supported": false,
+      "events_bytes": 400082,
+      "events_lines": 2000,
+      "events_renamed": true,
+      "events_sha256": "76d4fe09bcda705baba62dce731ac982a603c867369d72e05f254b2dc0149880",
+      "report_written": true
+    },
+    "events_path": "fixtures\\demo-fx-001\\events.jsonl",
+    "sha256": "76d4fe09bcda705baba62dce731ac982a603c867369d72e05f254b2dc0149880"
+  }
+}

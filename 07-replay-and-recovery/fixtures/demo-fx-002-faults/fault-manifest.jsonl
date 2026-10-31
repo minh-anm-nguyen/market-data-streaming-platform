@@ -1,0 +1,5 @@
+{"applied": true, "fault_id": "f0001", "kind": "missing_sequence", "sequence": 40, "symbol": "EURUSD"}
+{"applied": true, "fault_id": "f0002", "kind": "duplicate_exact", "sequence": 20, "symbol": "GBPUSD"}
+{"applied": true, "back_ns": 10000000000, "fault_id": "f0003", "kind": "stale_timestamp", "sequence": 15, "symbol": "USDJPY"}
+{"applied": true, "fault_id": "f0004", "kind": "invalid_spread", "sequence": 60, "symbol": "EURUSD"}
+{"applied": true, "fault_id": "f0005", "kind": "invalid_price", "sequence": 35, "symbol": "GBPUSD"}

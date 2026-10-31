@@ -1,0 +1,49 @@
+# Local ClickHouse for the integration tests (M1 of the roadmap).
+#
+# The image tag is PINNED to an exact version, not `latest`. Section 22 is
+# explicit that the behaviour this project depends on -- insert de-duplication,
+# dependent materialized views, async insert defaults -- has changed between
+# releases, so "whatever we pulled today" makes every result unreproducible
+# (case AA-06). Change the tag deliberately, re-run `make e2e-clickhouse`, and
+# record the new version in the benchmark report.
+#
+# Not a production deployment and not HA: one node, no Keeper, no replication.
+# The HA-LAB profile of section 2.2 is a separate exercise.
+
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:25.3.3.42
+    container_name: p06-clickhouse
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    environment:
+      # A local lab with no exposed credentials. Do not copy this anywhere real.
+      CLICKHOUSE_DB: default
+      CLICKHOUSE_USER: default
+      CLICKHOUSE_PASSWORD: ""
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: "1"
+      # The host may well be in a local zone; the server must not be, so that a
+      # timezone bug shows up in the tests rather than in production (case D-04).
+      TZ: UTC
+    ports:
+      - "127.0.0.1:8123:8123"   # HTTP, which is what the driver in src/ uses
+      - "127.0.0.1:9000:9000"   # native, for clickhouse-client
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+      # query_log must be on for the group Z diagnostics to return anything;
+      # section 11 notes that an empty query_log is not evidence of no slow
+      # queries, so the tests need it explicitly enabled.
+      - ./config/clickhouse-overrides.xml:/etc/clickhouse-server/config.d/p06.xml:ro
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8123/ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  clickhouse-data:
+    # A disposable lab volume. The chaos cases that fill or corrupt a disk may
+    # only ever run against something that can be thrown away (section 15).
+    name: p06-clickhouse-data

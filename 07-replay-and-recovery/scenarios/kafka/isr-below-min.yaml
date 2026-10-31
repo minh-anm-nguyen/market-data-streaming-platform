@@ -1,0 +1,29 @@
+# E2E-12 (degraded-state half): lose in-sync replicas until minISR cannot be
+# met. The producer must refuse rather than weaken durability, and no READY
+# build may be published from the resulting empty cut.
+#
+# The verdict is FAIL on purpose: this scenario stops at the degraded state and
+# never restores quorum, so the pipeline really has not delivered data the
+# source accepted. The *recovery* half of E2E-12 -- restore the brokers,
+# republish, prove the complete set arrives -- is in
+# tests/end_to_end/test_e2e_kafka.py, because it needs a step the declarative
+# scenario format has no way to express.
+version: p07.scenario.v1
+scenario_id: p07-kafka-isr-degraded-001
+test_case_id: E2E-12
+description: ISR below min_insync_replicas while publishing.
+profile: unit-model
+source:
+  run_dir: fixtures/demo-fx-001
+  anchor_sha256: 76d4fe09bcda705baba62dce731ac982a603c867369d72e05f254b2dc0149880
+replay:
+  chunk_sizes: [4096]
+faults:
+  - type: kafka_isr_degrade
+    target: kafka_broker
+    topic: md.ticks.v1
+    partition: -1
+expect:
+  verdict: FAIL
+limits:
+  max_scenario_duration_s: 120

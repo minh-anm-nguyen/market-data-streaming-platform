@@ -1,0 +1,259 @@
+{
+  "$id": "https://example.invalid/p07/scenario.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Generated from p07.scenario_loader by tools/emit_scenario_schema.py. The loader is the enforcement point; this file exists for editors and readers. Scenario files are written in the strict YAML subset p07.yamlite accepts.",
+  "properties": {
+    "description": {
+      "type": "string"
+    },
+    "expect": {
+      "additionalProperties": false,
+      "properties": {
+        "allow_physical_duplicates": {
+          "type": "boolean"
+        },
+        "require_fault_confirmed": {
+          "type": "boolean"
+        },
+        "require_published": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "require_zero_conflicts": {
+          "type": "boolean"
+        },
+        "verdict": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "INCONCLUSIVE",
+            "INVALID",
+            null
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "faults": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "after_calls": {},
+          "before_ingested_at_ns": {},
+          "broker_id": {},
+          "confirm": {
+            "description": "Required by destructive faults (retention expiry, TTL, volume loss).",
+            "type": "boolean"
+          },
+          "count": {},
+          "frame_index": {},
+          "free_bytes": {},
+          "new_log_start": {},
+          "partition": {
+            "description": "-1 means the busiest partition of the topic.",
+            "minimum": -1,
+            "type": "integer"
+          },
+          "records": {},
+          "stage": {},
+          "target": {
+            "enum": [
+              "clickhouse_ingest",
+              "clickhouse_server",
+              "kafka_broker",
+              "kafka_topic",
+              "network_proxy",
+              "p03_adapter",
+              "p04_producer",
+              "p05_ingestor",
+              "p06_builder",
+              "resource_budget"
+            ]
+          },
+          "topic": {},
+          "type": {
+            "enum": [
+              "build_crash",
+              "ch_ack_loss",
+              "ch_disk_full",
+              "ch_fail_before_commit",
+              "ch_raw_ttl",
+              "ch_server_down",
+              "ch_volume_loss",
+              "consumer_rebalance",
+              "ingest_crash",
+              "kafka_ack_loss",
+              "kafka_broker_stop",
+              "kafka_isr_degrade",
+              "kafka_retention_expire",
+              "producer_transient",
+              "transport_bad_magic",
+              "transport_close",
+              "transport_duplicate",
+              "transport_malformed",
+              "transport_truncate"
+            ]
+          }
+        },
+        "required": [
+          "type",
+          "target"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "lab": {
+      "additionalProperties": false,
+      "properties": {
+        "batch_max_records": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "brokers": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "event_time_stale_ns": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "group": {
+          "type": "string"
+        },
+        "kafka_idempotent_dedupe": {
+          "type": "boolean"
+        },
+        "min_insync_replicas": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "partitions": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "price_step_policy": {
+          "enum": [
+            "flag",
+            "reject"
+          ]
+        },
+        "producer_idempotent": {
+          "type": "boolean"
+        },
+        "replication_factor": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "sequence_window": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "strict_poison": {
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "limits": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence_max_bytes": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "max_parallel_faults": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "max_scenario_duration_s": {
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "profile": {
+      "type": "string"
+    },
+    "replay": {
+      "additionalProperties": false,
+      "properties": {
+        "chunk_sizes": {
+          "items": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "scenario_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "source": {
+      "additionalProperties": false,
+      "properties": {
+        "anchor_sha256": {
+          "description": "SHA-256 of events.jsonl, pinned OUTSIDE the run directory.",
+          "pattern": "^[0-9a-f]{64}$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "require_fault_plan": {
+          "type": "boolean"
+        },
+        "run_dir": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "run_dir"
+      ],
+      "type": "object"
+    },
+    "test_case_id": {
+      "type": "string"
+    },
+    "version": {
+      "const": "p07.scenario.v1"
+    }
+  },
+  "required": [
+    "version",
+    "scenario_id",
+    "source"
+  ],
+  "title": "P07 scenario",
+  "type": "object",
+  "x-fault-stages": {
+    "build_crash": "pre_build",
+    "ch_ack_loss": "pre_ingest",
+    "ch_disk_full": "pre_ingest",
+    "ch_fail_before_commit": "pre_ingest",
+    "ch_raw_ttl": "post_ingest",
+    "ch_server_down": "pre_ingest",
+    "ch_volume_loss": "post_ingest",
+    "consumer_rebalance": "pre_ingest",
+    "ingest_crash": "pre_ingest",
+    "kafka_ack_loss": "pre_replay",
+    "kafka_broker_stop": "pre_replay",
+    "kafka_isr_degrade": "pre_replay",
+    "kafka_retention_expire": "post_cut",
+    "producer_transient": "pre_replay",
+    "transport_bad_magic": "replay",
+    "transport_close": "replay",
+    "transport_duplicate": "replay",
+    "transport_malformed": "replay",
+    "transport_truncate": "replay"
+  }
+}

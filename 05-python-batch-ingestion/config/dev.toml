@@ -1,0 +1,88 @@
+# LOCAL-DEV profile (spec section 2.3): 1 broker RF=1, 1 ClickHouse node,
+# 1 consumer. Good for learning the API, correctness and crash behaviour.
+# This is NOT an HA topology and proves nothing about failover or capacity.
+
+[project]
+project = "p05"
+mode = "market_valid"              # market_valid | isolated_fault_test
+run_id = "p05-dev-001"
+topic_generation = "md-v1-generation-a"
+source_manifest = "fixtures/golden/manifest.json"
+
+[kafka]
+bootstrap_servers = "localhost:9092"
+group_id = "md-p05-dev-v1"
+topics = ["md.ticks.v1", "md.quotes.v1"]
+enable_auto_commit = false
+enable_auto_offset_store = false
+# 'error' so an expired or absent committed offset stops the run instead of
+# silently jumping to latest and skipping data (spec I-11).
+auto_offset_reset = "error"
+allow_auto_create_topics = false
+isolation_level = "read_committed"
+session_timeout_ms = 10000
+max_poll_interval_ms = 300000
+queued_max_messages_kbytes = 16384  # 16 MiB native prefetch target
+poll_timeout_ms = 100
+cluster_id = "local-dev"
+
+[contracts]
+protobuf_package = "marketdata.v1"
+# SHA-256 of the serialized FileDescriptorProto compiled into
+# src/p05_ingest/generated/market_data_pb2.py -- i.e. the schema the running
+# parser actually uses. Print it with `python -m p05_ingest.cli descriptor-hash`.
+protobuf_descriptor_sha256 = "e17bf37b0384e521ee4a65392ab4778405aacfc06355215e6ac8d0c5adff0cbc"
+max_record_value_bytes = 4096
+max_key_bytes = 32
+max_headers_total_bytes = 512
+max_dataset_id_bytes = 128
+strict_symbol_ascii = true
+strict_market_validation = true
+# Empty list = accept any non-empty source_schema_version. Pin this list once
+# P02 freezes its version ladder.
+allowed_source_schema_versions = []
+ticks_topic = "md.ticks.v1"
+quotes_topic = "md.quotes.v1"
+
+[batch]
+per_partition_max_rows = 5000
+per_partition_max_serialized_bytes = 4194304
+max_wait_ms = 2000
+max_inflight_batches_per_partition = 1
+max_inflight_batches_global = 4
+app_buffer_budget_bytes = 67108864
+pause_high_watermark = 0.80
+resume_low_watermark = 0.50
+
+[clickhouse]
+host = "localhost"
+port = 8123
+database = "md_ingest"
+table = "market_events_raw"
+user_env = "P05_CH_USER"
+password_env = "P05_CH_PASSWORD"
+secure = false                     # local lab only
+connect_timeout_s = 3
+insert_timeout_s = 10
+async_insert = false               # sync insert so the ACK means something
+wait_for_async_insert = true
+deduplicate_insert = "enable"      # CH 26.2+; legacy setting for older servers
+schema_version = "raw-v1"
+
+[retry]
+max_attempts = 5
+initial_backoff_ms = 100
+max_backoff_ms = 3000
+overall_deadline_s = 30
+jitter_seed = 1337
+
+[quarantine]
+mode = "stop"                      # fail-closed by default (spec FR-12)
+
+[shutdown]
+drain_timeout_s = 20
+hard_exit_on_incomplete = true
+
+[tests]
+fault_plan = "fixtures/faults/none.json"
+require_independent_reconciliation_for_go = true

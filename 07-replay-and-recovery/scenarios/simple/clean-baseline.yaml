@@ -1,0 +1,21 @@
+# E2E-01: no faults. Everything the source accepts must reach a published READY
+# build, with every boundary set exactly equal.
+version: p07.scenario.v1
+scenario_id: p07-clean-baseline-001
+test_case_id: E2E-01
+description: Clean end-to-end replay with no injected fault.
+profile: unit-model
+source:
+  run_dir: fixtures/demo-fx-001
+  anchor_sha256: 76d4fe09bcda705baba62dce731ac982a603c867369d72e05f254b2dc0149880
+replay:
+  chunk_sizes: [4096]
+faults: []
+expect:
+  verdict: PASS
+  require_published: true
+  require_zero_conflicts: true
+  allow_physical_duplicates: false
+  require_fault_confirmed: false
+limits:
+  max_scenario_duration_s: 120

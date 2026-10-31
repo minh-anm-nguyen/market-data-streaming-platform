@@ -1,0 +1,24 @@
+# E2E-20: the earliest offset the cut needs is deleted by retention before the
+# consumer reaches it. The only admissible answer is INCONCLUSIVE/NO-GO: no
+# reset to latest, and no claim that nothing was lost.
+version: p07.scenario.v1
+scenario_id: p07-kafka-retention-expired-001
+test_case_id: E2E-20
+description: Required Kafka range expires mid-run.
+profile: unit-model
+source:
+  run_dir: fixtures/demo-fx-001
+  anchor_sha256: 76d4fe09bcda705baba62dce731ac982a603c867369d72e05f254b2dc0149880
+replay:
+  chunk_sizes: [4096]
+faults:
+  - type: kafka_retention_expire
+    target: kafka_topic
+    topic: md.ticks.v1
+    partition: -1
+    new_log_start: 5
+    confirm: true
+expect:
+  verdict: INCONCLUSIVE
+limits:
+  max_scenario_duration_s: 120

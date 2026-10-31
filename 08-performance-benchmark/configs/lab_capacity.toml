@@ -1,0 +1,71 @@
+# LAB_CAPACITY -- pinned broker and ClickHouse resources, topology recorded.
+#
+# This is the profile a capacity claim is allowed to come from: the steady phase
+# is the 1800 seconds NFR-05 proposes and the query lane is on, so one run can
+# speak to both throughput and latency. Whether this machine reaches the rate
+# below is unknown until it is measured; the number is the target that goes into
+# the schedule, not a result.
+#
+# Results from this profile are never merged with LOCAL_SMALL results (ADR-10).
+
+[run]
+id = "P08-LAB-CAPACITY"
+seed = 20261030
+manifest_version = "p08.v1"
+profile = "LAB_CAPACITY"
+expected_oracle = "builtin-independent"
+lane = "L04"
+
+[dataset]
+dataset_id = "BENCH_LAB_001"
+schema = "marketdata.v1.MarketDataEvent"
+symbol_count = 100
+symbol_distribution = "uniform"
+tick_to_quote_ratio = "4:1"
+source_seal_required = true
+
+[kafka]
+tick_topic = "md.ticks.v1"
+quote_topic = "md.quotes.v1"
+partitions_per_topic = 8
+producer_acks = "all"
+producer_idempotent = true
+# Issued by P09, not chosen here. The generation tag identifies a topic
+# incarnation, and only the component that creates the topics knows when
+# one was deleted and recreated. Read it from
+# 09-full-system-integration/contracts/contracts.lock.yaml
+# (cross_project_identity.kafka.topic_generation). P09 finding P09-M0-08.
+topic_generation = "md-v1-generation-a"
+
+[load]
+model = "open_loop"
+market_tick_target_per_s = 50000
+quote_target_per_s = 12500
+ramp_up_seconds = 120
+warmup_seconds = 300
+steady_seconds = 1800
+drain_seconds = 120
+max_late_issue_ms = 10
+
+[query]
+# On: a mixed lane reports write throughput and read latency separately.
+enabled = true
+family = "Q02"
+concurrency = 4
+min_complete_samples = 10000
+client_p95_budget_ms = 280
+cache_profile = "warm"
+deadline_ms = 2000
+
+[evidence]
+require_ready_snapshot = true
+require_identity_diff = true
+require_semantic_match = true
+require_fault_receipt_if_chaos = true
+fail_on_missing_metrics = true
+
+[safety]
+lab_only = true
+dry_run_destructive_actions = true
+max_test_volume_fill_percent = 90
+allow_host_root_path = false

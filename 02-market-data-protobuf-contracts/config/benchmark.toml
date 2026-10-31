@@ -1,0 +1,46 @@
+# Reference configuration (section 12.1).
+#
+# Every key is validated and unknown keys are REJECTED, so this file is always a
+# complete, auditable statement of a run rather than a set of hints. A typo like
+# `max_payload_byte` is an error, not a silently ignored line.
+#
+# Prices are integer ticks; the decimal form is price_ticks / price_scale and is
+# a display concern outside the codec. Synthetic data only.
+
+[contract]
+proto_package = "marketdata.v1"
+source_schema_version = "sim.v1"      # Project 01's JSONL format
+frame_protocol = "MDP1"               # framing version, NOT the .proto version
+max_json_line_bytes = 4096            # measured in bytes; the newline is not counted
+max_payload_bytes = 4096              # serialised MarketDataEvent, excluding framing
+max_symbol_bytes = 32
+max_dataset_id_bytes = 128
+max_source_version_bytes = 32
+
+[validation]
+mode = "strict_normal"                # strict_normal | fault_passthrough
+fail_on_unknown_json_keys = true
+require_all_core_fields = true
+allow_only_manifest_faults = true
+
+[stream]
+host = "127.0.0.1"                    # MDP1 has no auth and no encryption
+port = 9010                           # deliberately not 9009: that is Project 01's JSONL port
+max_clients = 1
+max_queue_events = 2048               # both budgets apply, whichever is reached first
+max_queue_bytes = 8388608             # includes the 4-byte header per frame
+prefix_header_deadline_ms = 2000      # absolute, not reset per byte
+payload_deadline_ms = 2000
+on_queue_budget_exceeded = "fail_connection"   # or "block_with_timeout"
+allow_public_bind = false
+
+[artifacts]
+require_completed_source_manifest = true
+strict_pbstream_verification = true
+hash_algorithm = "sha256"
+
+[benchmark]
+target_events_per_sec = [1000, 10000, 50000, 120000]
+snapshot_interval_s = 1.0
+record_payload_size_histogram = true
+duration_s = 5.0

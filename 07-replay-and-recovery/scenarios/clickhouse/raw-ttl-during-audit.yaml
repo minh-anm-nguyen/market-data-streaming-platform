@@ -1,0 +1,21 @@
+# E2E-33: raw rows the audit still needs are removed by TTL. The audit must
+# report the loss and stop, not finish on the survivors.
+version: p07.scenario.v1
+scenario_id: p07-ch-raw-ttl-001
+test_case_id: E2E-33
+description: Raw TTL expiry between ingestion and audit.
+profile: unit-model
+source:
+  run_dir: fixtures/demo-fx-001
+  anchor_sha256: 76d4fe09bcda705baba62dce731ac982a603c867369d72e05f254b2dc0149880
+replay:
+  chunk_sizes: [4096]
+faults:
+  - type: ch_raw_ttl
+    target: clickhouse_server
+    before_ingested_at_ns: 4611686018427387904
+    confirm: true
+expect:
+  verdict: INCONCLUSIVE
+limits:
+  max_scenario_duration_s: 120

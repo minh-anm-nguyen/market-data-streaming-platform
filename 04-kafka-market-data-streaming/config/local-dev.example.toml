@@ -1,0 +1,94 @@
+# Profile local-dev: one Kafka KRaft broker, RF=1, minISR=1.
+#
+# Section 4.5 is explicit about what this profile is for: learning the protocol,
+# unit and integration work. It must never be used to support an HA or failover
+# claim, and the config loader enforces the other direction too -- a config that
+# says profile = "reliability-lab" with RF below 3 is refused outright.
+#
+# Every value here is pinned rather than left to a client default, because a
+# default that changes between librdkafka releases would change the durability
+# story without anything in this repository changing (NFR-14).
+
+[run]
+run_id = "p04-local-001"
+mode = "offline_verified_publish"
+# A completed Project 01 run directory: events.jsonl plus report.json plus the
+# COMPLETED marker. Without the marker and a matching digest the run can only
+# reach INCOMPLETE, which is the honest verdict for an unverifiable source.
+source_run_dir = "../01-market-data-simulator/runs/p04-smoke"
+# Empty means "record whatever the binary carries". Set it to the digest printed
+# by `p04_publisher --print-descriptor-hash` to make a schema change fail the
+# run instead of changing the data silently (case D-08).
+#
+# Pinned 2026-10-31 from a RelWithDebInfo build against /opt/p04-deps
+# (protobuf 3.21.12). This is the sha256 of the serialized FileDescriptorProto,
+# which is the same value P05 pins: the two runtimes serialize it identically.
+# P09 derives this independently from P02's descriptor baseline and checks it
+# (finding P09-M0-04), so regenerate both together, never one alone.
+proto_descriptor_sha256 = "e17bf37b0384e521ee4a65392ab4778405aacfc06355215e6ac8d0c5adff0cbc"
+expected_source_schema = "sim.v1"
+allow_fault_test_into_market_topics = false
+single_active_dataset = true
+output_dir = "runs"
+max_events = 0
+target_events_per_second = 0
+duplicate_every_event = false
+
+[kafka]
+bootstrap_servers = "127.0.0.1:9092"
+security_protocol = "PLAINTEXT"      # loopback only; never an internet endpoint
+client_id = "p04-publisher-01"
+profile = "local-dev"
+ticks_topic = "md.ticks.v1"
+quotes_topic = "md.quotes.v1"
+anomaly_topic = ""
+expected_partitions_per_topic = 8
+expected_replication_factor = 1
+expected_min_insync_replicas = 1
+expected_cleanup_policy = "delete"
+expected_unclean_leader_election = false
+partitioner = "murmur2_random"
+allow_auto_topic_create = false
+partition_golden_path = "config/topic-partition-golden.json"
+
+[producer]
+enable_idempotence = true
+acks = "all"
+max_in_flight_requests_per_connection = 5
+# Bounded by message_timeout_ms, not by wall time: a large retry count is not a
+# promise to retry forever (section 11.2 config notes).
+retries = 2147483647
+message_timeout_ms = 30000
+linger_ms = 5
+batch_size_bytes = 65536
+compression_type = "lz4"
+queue_buffering_max_messages = 100000
+queue_buffering_max_kbytes = 65536   # KiB, so about 64 MiB, not the 1 GiB default
+poll_interval_ms = 10
+
+[handoff]
+max_records = 4096
+max_bytes = 8388608
+high_watermark_percent = 80
+low_watermark_percent = 40
+stall_timeout_ms = 5000
+
+[contract]
+max_kafka_value_bytes = 4096
+max_key_bytes = 32
+max_headers_total_bytes = 512
+max_active_symbols = 256
+max_active_datasets = 4
+
+[shutdown]
+drain_deadline_ms = 15000
+stop_on_contract_mismatch = true
+
+[verifier]
+# Read by the Python snapshot verifier, not by the C++ publisher.
+mode = "snapshot"
+auto_commit = false
+auto_offset_store = false
+start_policy = "explicit_captured_begin_offsets"
+stop_policy = "explicit_captured_end_offsets"
+strict_semantic_equality = true

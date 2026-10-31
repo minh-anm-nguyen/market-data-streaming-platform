@@ -1,0 +1,23 @@
+# MD_ADAPTER_SANITIZER: none | address | address+undefined | thread | memory
+set(MD_ADAPTER_SANITIZER "none" CACHE STRING "Sanitizer configuration")
+set_property(CACHE MD_ADAPTER_SANITIZER PROPERTY STRINGS
+             none address address+undefined undefined thread)
+
+function(md_adapter_apply_sanitizers target)
+  if(MD_ADAPTER_SANITIZER STREQUAL "none")
+    return()
+  endif()
+  set(_flags "")
+  if(MD_ADAPTER_SANITIZER MATCHES "address")
+    list(APPEND _flags -fsanitize=address)
+  endif()
+  if(MD_ADAPTER_SANITIZER MATCHES "undefined")
+    list(APPEND _flags -fsanitize=undefined -fno-sanitize-recover=undefined)
+  endif()
+  if(MD_ADAPTER_SANITIZER STREQUAL "thread")
+    list(APPEND _flags -fsanitize=thread)
+  endif()
+  list(APPEND _flags -fno-omit-frame-pointer -g)
+  target_compile_options(${target} PRIVATE ${_flags})
+  target_link_options(${target} PRIVATE ${_flags})
+endfunction()

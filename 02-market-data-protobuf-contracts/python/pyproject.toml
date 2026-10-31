@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "md-contract"
+version = "0.1.0"
+description = "marketdata.v1 Protobuf schema, codec and cross-language conformance suite (synthetic data, for testing only)"
+requires-python = ">=3.12"
+# Pinned exactly, not loosely. The generated code carries a hard version check
+# and C++ protobuf offers no ABI promise across releases, so a range here would
+# allow a combination the project has never tested (NFR-10, cases E05, E06).
+dependencies = ["protobuf==7.35.1"]
+
+[project.optional-dependencies]
+test = ["pytest>=8", "hypothesis>=6", "psutil>=5.9"]
+
+[project.scripts]
+md-contract = "md_contract.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

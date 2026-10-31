@@ -1,0 +1,32 @@
+P09 pipeline chain-20261031T091246Z
+  work dir /home/minh/p09-pipeline-20261031T091246Z
+== 0. infrastructure health ==
+  both healthy
+== 0b. broker reachable ==
+  reachable on attempt 1: p09DevClusterAAAA
+== 1. P01 record ==
+== 2. P01 verify ==
+== 3. P02 encode ==
+== 4. P02 verify ==
+== 5. P03 source manifest present ==
+  manifest written by P02
+== 6. P03 adapt ==
+md_adapter: status=COMPLETE_OFFLINE reason=none frames=2000 business_ok=2000 published=2000 suppressed=0
+md_adapter: offline replay completed against a verified source
+status: COMPLETE_OFFLINE
+== 7. P04 publish ==
+%4|1793438023.400|GETPID|p04-publisher-01#producer-1| [thrd:main]: Failed to acquire idempotence PID from broker 127.0.0.1:9092/1: Broker: Coordinator load in progress: retrying
+verdict=PASS safety=PASS performance=NOT_RUN exit=0 artifacts=/home/minh/p09-pipeline-20261031T091246Z/p04/chain-20261031T091246Z
+== 8. P05 seed offsets ==
+  seeded 16 partitions for group md-p05-chain-20261031T091246Z (sum of start offsets = 0)
+== 9. P05 ingest ==
+[PASS] protobuf descriptor pin      marketdata.v1 @ e17bf37b0384e521...
+[PASS] insert acknowledgement mode  async_insert=0: the ACK means the insert completed
+[PASS] offset reset policy          auto.offset.reset=error
+[PASS] fault lane isolation         mode=market_valid writing to md_ingest.market_events_raw
+[PASS] poison policy                fail-closed: a poison record stops its partition
+[PASS] memory budget                67108864 B global, 4194304 B per batch, pause at 80% / resume at 50%. Tracked bytes only -- this is not an RSS bound
+[PASS] clickhouse table schema      md_ingest.market_events_raw
+[WARN] kafka retention headroom     not evaluated: no live broker to read log-start and end offsets from
+
+PREFLIGHT OK

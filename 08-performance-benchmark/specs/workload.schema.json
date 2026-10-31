@@ -1,0 +1,294 @@
+{
+  "$id": "https://example.invalid/p08/workload.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "A complete, auditable statement of one benchmark run (section 3.1). Unknown and missing keys are both rejected: a config that can fall back to defaults cannot be pinned before a run, and A/B pairs that differ in one variable cannot be verified. Generated from p08_bench.config by scripts/build_schemas.py -- do not hand-edit.",
+  "properties": {
+    "dataset": {
+      "additionalProperties": false,
+      "properties": {
+        "dataset_id": {
+          "type": "string"
+        },
+        "schema": {
+          "type": "string"
+        },
+        "source_seal_required": {
+          "type": "boolean"
+        },
+        "symbol_count": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "symbol_distribution": {
+          "enum": [
+            "uniform",
+            "skew_80_20",
+            "hot_symbol_95"
+          ],
+          "type": "string"
+        },
+        "tick_to_quote_ratio": {
+          "description": "ticks:quotes. The measured mix; ticks/s is never events/s (INV-12).",
+          "pattern": "^[0-9]+:[0-9]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dataset_id",
+        "schema",
+        "source_seal_required",
+        "symbol_count",
+        "symbol_distribution",
+        "tick_to_quote_ratio"
+      ],
+      "type": "object"
+    },
+    "evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "fail_on_missing_metrics": {
+          "type": "boolean"
+        },
+        "require_fault_receipt_if_chaos": {
+          "type": "boolean"
+        },
+        "require_identity_diff": {
+          "type": "boolean"
+        },
+        "require_ready_snapshot": {
+          "type": "boolean"
+        },
+        "require_semantic_match": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "fail_on_missing_metrics",
+        "require_fault_receipt_if_chaos",
+        "require_identity_diff",
+        "require_ready_snapshot",
+        "require_semantic_match"
+      ],
+      "type": "object"
+    },
+    "kafka": {
+      "additionalProperties": false,
+      "properties": {
+        "partitions_per_topic": {
+          "description": "per topic, not in total. 8 is the CV-reference topology (NFR-02); another value is allowed and judged separately.",
+          "minimum": 1,
+          "type": "integer"
+        },
+        "producer_acks": {
+          "enum": [
+            "all",
+            "1",
+            "0"
+          ],
+          "type": "string"
+        },
+        "producer_idempotent": {
+          "type": "boolean"
+        },
+        "quote_topic": {
+          "type": "string"
+        },
+        "tick_topic": {
+          "type": "string"
+        },
+        "topic_generation": {
+          "description": "distinguishes two incarnations of one topic name (INV-08).",
+          "type": "string"
+        }
+      },
+      "required": [
+        "partitions_per_topic",
+        "producer_acks",
+        "producer_idempotent",
+        "quote_topic",
+        "tick_topic",
+        "topic_generation"
+      ],
+      "type": "object"
+    },
+    "load": {
+      "additionalProperties": false,
+      "properties": {
+        "drain_seconds": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "market_tick_target_per_s": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "max_late_issue_ms": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "model": {
+          "enum": [
+            "open_loop",
+            "open_loop_burst",
+            "closed_loop",
+            "finite_replay"
+          ],
+          "type": "string"
+        },
+        "quote_target_per_s": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "ramp_up_seconds": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "steady_seconds": {
+          "description": "1800 is the NFR-05 protocol for a capacity claim; a shorter window is allowed and cannot make one.",
+          "minimum": 1,
+          "type": "integer"
+        },
+        "warmup_seconds": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "drain_seconds",
+        "market_tick_target_per_s",
+        "max_late_issue_ms",
+        "model",
+        "quote_target_per_s",
+        "ramp_up_seconds",
+        "steady_seconds",
+        "warmup_seconds"
+      ],
+      "type": "object"
+    },
+    "query": {
+      "additionalProperties": false,
+      "properties": {
+        "cache_profile": {
+          "enum": [
+            "warm",
+            "cold"
+          ],
+          "type": "string"
+        },
+        "client_p95_budget_ms": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "concurrency": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "deadline_ms": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "enabled": {
+          "description": "false means this lane proves no query percentile.",
+          "type": "boolean"
+        },
+        "family": {
+          "type": "string"
+        },
+        "min_complete_samples": {
+          "description": "10000 is the NFR-08 guardrail; below it a p95 is discovery-grade.",
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "cache_profile",
+        "client_p95_budget_ms",
+        "concurrency",
+        "deadline_ms",
+        "enabled",
+        "family",
+        "min_complete_samples"
+      ],
+      "type": "object"
+    },
+    "run": {
+      "additionalProperties": false,
+      "properties": {
+        "expected_oracle": {
+          "type": "string"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "lane": {
+          "type": "string"
+        },
+        "manifest_version": {
+          "const": "p08.v1",
+          "type": "string"
+        },
+        "profile": {
+          "enum": [
+            "LOCAL_SMALL",
+            "LAB_CAPACITY",
+            "LAB_RECOVERY",
+            "QUERY_ONLY",
+            "MIXED"
+          ],
+          "type": "string"
+        },
+        "seed": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "expected_oracle",
+        "id",
+        "lane",
+        "manifest_version",
+        "profile",
+        "seed"
+      ],
+      "type": "object"
+    },
+    "safety": {
+      "additionalProperties": false,
+      "properties": {
+        "allow_host_root_path": {
+          "type": "boolean"
+        },
+        "dry_run_destructive_actions": {
+          "type": "boolean"
+        },
+        "lab_only": {
+          "type": "boolean"
+        },
+        "max_test_volume_fill_percent": {
+          "maximum": 99,
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "allow_host_root_path",
+        "dry_run_destructive_actions",
+        "lab_only",
+        "max_test_volume_fill_percent"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "dataset",
+    "evidence",
+    "kafka",
+    "load",
+    "query",
+    "run",
+    "safety"
+  ],
+  "title": "P08 workload manifest",
+  "type": "object"
+}

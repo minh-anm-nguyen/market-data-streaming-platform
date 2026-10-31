@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "md-analytics"
+version = "0.1.0"
+description = "ClickHouse time-series analytics and materialized 1m OHLC bars (Project 06)"
+requires-python = ">=3.12"
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest>=8", "hypothesis>=6", "psutil>=5.9"]
+
+[project.scripts]
+md-analytics = "md_analytics.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "tests"]
+# This project has no async code. The option is set because pytest-asyncio is
+# present in the shared virtualenv and warns at startup when it is unset, and
+# filterwarnings below turns that warning into a collection error.
+asyncio_default_fixture_loop_scope = "function"
+markers = [
+    "slow: takes more than a few seconds",
+    "perf: latency or throughput measurement, never a correctness assertion",
+    "soak: long-running resource-growth test",
+    "chaos: injects process, disk or ACK failure",
+    "clickhouse: needs a real ClickHouse server (P06_CLICKHOUSE_URL); skipped otherwise",
+    "property: hypothesis-driven invariant or metamorphic test",
+]
+filterwarnings = ["error::DeprecationWarning"]

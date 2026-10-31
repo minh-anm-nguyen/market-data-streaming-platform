@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "p05-ingest"
+version = "0.1.0"
+description = "Kafka to Protobuf to ClickHouse batch ingestion with sink-first offset commits"
+requires-python = ">=3.12"
+dependencies = [
+    "confluent-kafka>=2.5",
+    "clickhouse-connect>=0.8",
+    "protobuf>=5.27",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8",
+    "hypothesis>=6",
+    "psutil>=5.9",
+    "coverage>=7",
+]
+dev = ["grpcio-tools>=1.66"]
+
+[project.scripts]
+p05-ingest = "p05_ingest.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+# pytest-asyncio may be present in the shared environment. This package has
+# no async code, but the plugin warns when the option is unset and
+# filterwarnings turns that into an error.
+asyncio_default_fixture_loop_scope = "function"
+markers = [
+    "slow: takes more than a few seconds",
+    "perf: throughput or latency measurement, not a correctness assertion",
+    "soak: long-running resource-growth test",
+    "chaos: injects process, sink or rebalance failure",
+    "property: hypothesis-driven invariant check",
+    "kafka_clickhouse: needs a live Kafka broker and ClickHouse server",
+    "destructive_lab_only: may damage state; opt in explicitly",
+]
+filterwarnings = ["error::DeprecationWarning"]

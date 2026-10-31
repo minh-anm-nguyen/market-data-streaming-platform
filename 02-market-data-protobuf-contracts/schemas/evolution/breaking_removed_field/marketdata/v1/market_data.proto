@@ -1,0 +1,44 @@
+// Project 02 release contract: marketdata.v1 (frozen).
+//
+// Section 3.1 of SYSTEM_DESIGN. The field numbers below are part of the release
+// contract: changing or reusing one is a wire-breaking change that the schema
+// gate (scripts/compare_descriptor.py) refuses, even across releases.
+//
+// Synthetic data. A `Tick` is a simulated price update, NOT an executed trade
+// from a consolidated feed, and a `Quote` is NOT a real market quote.
+syntax = "proto3";
+
+package marketdata.v1;
+
+// Quote is a synthetic two-sided price. Prices are integer fixed-point ticks;
+// the decimal form is Decimal(ticks) / Decimal(price_scale) and is a display
+// concern outside the codec.
+message Quote {
+  // Explicit presence: an absent bid is not the same thing as a bid of 0.
+  optional int64 bid_ticks = 1;
+  optional int64 ask_ticks = 2;
+}
+
+// Tick is a synthetic price update. Deliberately carries no volume and no trade
+// id so it cannot be mistaken for a real trade.
+message Tick {
+  optional int64 price_ticks = 1;
+}
+
+message MarketDataEvent {
+  optional string dataset_id = 1;
+  optional string symbol = 2;
+  optional int64 sequence = 3;
+  optional int64 event_time_ns = 4;
+  // Describes the INPUT format (Project 01's "sim.v1"), not this Protobuf
+  // contract. The Protobuf contract version is the package plus the descriptor
+  // release hash; the two must never be conflated.
+  optional string source_schema_version = 6;
+
+  // The oneof is the single source of truth for the event type. There is
+  // deliberately no second `event_type` string field, which could contradict it.
+  oneof payload {
+    Quote quote = 10;
+    Tick tick = 11;
+  }
+}

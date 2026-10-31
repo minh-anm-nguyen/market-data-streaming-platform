@@ -1,0 +1,76 @@
+# dev profile -- section 19.2.
+#
+# EVERY NUMBER HERE IS A DEV-LAB ASSUMPTION, not a measured value and not an
+# SLO. max_execution_time_seconds = 30 says nothing about any host; it must be
+# re-pinned per machine and recorded in the benchmark report (NFR-07, NFR-12).
+#
+# 200M rows, 8 Kafka partitions PER TOPIC, fast storage, pinned CPU/RAM/cgroup,
+# query concurrency and chaos (section 2.2).
+#
+# Reaching 120k events/s or a 280 ms p95 on a personal machine is NOT expected
+# and is not required: section 18.1 says so outright. The ladder below is the
+# workload to attempt and measure, not a result to assume.
+
+[project]
+project_id = "P06"
+profile = "capacity"
+contract_version = "marketdata.v1"
+raw_table = "md_ingest.market_events_raw"
+canonical_table = "md_analytics.canonical_ticks"
+bars_1m_table = "md_analytics.bars_1m_state"
+require_manifest_sha256 = true
+require_p05_offset_cut = true
+require_independent_reconcile = true
+# The three flags below are rejected if set true: a config file is not the place
+# to disable a correctness gate (see config.py _MUST_BE_FALSE).
+allow_direct_raw_to_mv = false
+allow_publish_on_unknown_ack = false
+allow_publish_with_conflicts = false
+
+[time]
+timezone = "UTC"
+unit = "nanoseconds_since_unix_epoch"
+bar_interval_ns = 60000000000
+reject_unsupported_timestamp_range = true
+
+[queries]
+require_ready_build = true
+require_dataset_scope = true
+require_symbol_scope = true
+require_minute_alignment = true
+max_bars_returned = 10000
+max_query_window_minutes = 10080
+max_execution_time_seconds = 30
+max_concurrent_interactive_queries = 32
+max_canonical_rows = 100000
+
+[canonical]
+require_unique_source_identity = true
+require_identical_semantic_digest_on_retries = true
+publish_mode = "sealed_snapshot_only"
+manual_rebuild_on_late_corrections = true
+insert_block_size = 20000
+
+[retention]
+# NOT ENABLED until the backup and recovery gates of section 9 pass (NFR-11).
+enabled = false
+raw_ttl_days_candidate = 90
+require_restore_drill = true
+recovery_window_days = 7
+audit_window_days = 30
+rebuild_window_days = 14
+late_arrival_window_days = 3
+backup_max_age_days = 2
+
+[benchmark]
+query_repetitions = 1000
+query_concurrency = [1, 4, 16, 32]
+dataset_rows_targets = [1000000, 10000000, 50000000, 200000000]
+offered_rates_events_s = [1000, 10000, 50000, 120000]
+
+[clickhouse]
+url = "http://127.0.0.1:8123"
+user = "default"
+password = ""
+database = "default"
+timeout_s = 30

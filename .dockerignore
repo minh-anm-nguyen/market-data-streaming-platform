@@ -1,0 +1,15 @@
+# Keep the P09 build context small and deterministic. These are per-host
+# artifacts: shipping them would bloat the image and make the build depend on
+# whoever ran the tests last.
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.hypothesis
+**/.venv
+**/.coverage
+**/build
+**/.artifacts
+**/runs
+**/reports/runs
+**/node_modules
+**/.git

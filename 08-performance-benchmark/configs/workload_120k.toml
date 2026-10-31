@@ -1,0 +1,71 @@
+# The 120k ticks/s challenge lane (L07).
+#
+# L07 is deliberately ticks-only. The CV figure is in market ticks, and mixing
+# quotes in makes the ticks/s label ambiguous (section 1.2), so quotes are
+# measured in a separate lane and the ratio here is 1:0.
+#
+# 120000 is the rate written into the arrival schedule. If the driver cannot
+# issue it, the run is INVALID for a 120k claim no matter how the pipeline
+# behaved (case E2E-37) -- calibrate first with: p08-bench calibrate.
+
+[run]
+id = "P08-L07-120K"
+seed = 20261030
+manifest_version = "p08.v1"
+profile = "LAB_CAPACITY"
+expected_oracle = "builtin-independent"
+lane = "L07"
+
+[dataset]
+dataset_id = "BENCH_SYNTHETIC_001"
+schema = "marketdata.v1.MarketDataEvent"
+symbol_count = 100
+symbol_distribution = "uniform"
+tick_to_quote_ratio = "1:0"
+source_seal_required = true
+
+[kafka]
+tick_topic = "md.ticks.v1"
+quote_topic = "md.quotes.v1"
+partitions_per_topic = 8
+producer_acks = "all"
+producer_idempotent = true
+# Issued by P09, not chosen here. The generation tag identifies a topic
+# incarnation, and only the component that creates the topics knows when
+# one was deleted and recreated. Read it from
+# 09-full-system-integration/contracts/contracts.lock.yaml
+# (cross_project_identity.kafka.topic_generation). P09 finding P09-M0-08.
+topic_generation = "md-v1-generation-a"
+
+[load]
+model = "open_loop"
+market_tick_target_per_s = 120000
+quote_target_per_s = 0
+ramp_up_seconds = 120
+warmup_seconds = 300
+steady_seconds = 1800
+drain_seconds = 300
+max_late_issue_ms = 10
+
+[query]
+# Disabled: L07 is a write-only rate lane. Reads are lane L10.
+enabled = false
+family = "Q02"
+concurrency = 1
+min_complete_samples = 10000
+client_p95_budget_ms = 280
+cache_profile = "warm"
+deadline_ms = 2000
+
+[evidence]
+require_ready_snapshot = true
+require_identity_diff = true
+require_semantic_match = true
+require_fault_receipt_if_chaos = true
+fail_on_missing_metrics = true
+
+[safety]
+lab_only = true
+dry_run_destructive_actions = true
+max_test_volume_fill_percent = 90
+allow_host_root_path = false

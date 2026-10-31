@@ -1,0 +1,82 @@
+# Reference configuration for market_sim.
+#
+# Every key below is required: the parser rejects unknown keys AND missing keys,
+# so a config file is always a complete, auditable statement of the run. There is
+# no include mechanism on purpose -- one file, one resolved config, one hash.
+#
+# Prices are integer ticks. price_scale is a simulation parameter: the displayed
+# price is price_ticks / price_scale. These are synthetic values, not market data.
+
+[run]
+mode = "record"                          # record | serve | both
+seed = 20261030
+start_time_ns = 1793322000000000000    # fixed UTC logical t0 -> deterministic output
+count = 100000                         # logical slots; mutually exclusive with duration_s
+rate_per_sec = 1000                    # total across all symbols, not per symbol
+quote_ratio_pct = 80
+scheduler_batch_ms = 10
+max_burst_slots = 5000
+max_scheduler_lag_ms = 2000
+on_scheduler_lag = "continue-degraded" # or "fail-fast"
+bound_policy = "reflect"               # or "clamp", at the price band edges
+shutdown_drain_timeout_s = 30.0
+
+[symbols]
+order = ["EURUSD", "GBPUSD", "USDJPY"]
+
+[symbols.EURUSD]
+price_scale = 100000
+initial_price_ticks = 108347
+min_price_ticks = 100000
+max_price_ticks = 120000
+min_spread_ticks = 1
+max_spread_ticks = 5
+max_step_ticks = 8
+weight = 3
+
+[symbols.GBPUSD]
+price_scale = 100000
+initial_price_ticks = 126540
+min_price_ticks = 115000
+max_price_ticks = 140000
+min_spread_ticks = 1
+max_spread_ticks = 8
+max_step_ticks = 10
+weight = 2
+
+[symbols.USDJPY]
+price_scale = 1000
+initial_price_ticks = 151230
+min_price_ticks = 140000
+max_price_ticks = 165000
+min_spread_ticks = 1
+max_spread_ticks = 6
+max_step_ticks = 9
+weight = 1
+
+[output.file]
+enabled = true
+root_dir = "../runs"
+max_queue_events = 20000
+max_queue_bytes = 16777216
+fsync_every_events = 100000            # 0 disables count-based fsync
+fsync_every_seconds = 5.0              # 0 disables time-based fsync
+max_record_bytes = 4096
+max_total_bytes = 10737418240          # abort before filling the disk
+
+[output.tcp]
+enabled = false
+host = "127.0.0.1"
+port = 9009
+max_clients = 1
+max_queue_events = 10000
+max_queue_bytes = 8388608
+send_timeout_ms = 2000
+slow_client_policy = "disconnect"
+wait_for_client = false
+startup_timeout_s = 30.0
+allow_public_bind = false              # non-loopback bind must be opted into
+
+[faults]
+enabled = true
+plan_path = "./fault-plan.toml"

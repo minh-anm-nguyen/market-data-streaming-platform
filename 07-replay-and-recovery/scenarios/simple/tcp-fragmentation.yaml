@@ -1,0 +1,19 @@
+# E2E-04: one byte at a time, then alternating 1/17. Framing must be
+# chunk-agnostic, so the accepted set is identical to the baseline's.
+version: p07.scenario.v1
+scenario_id: p07-tcp-fragmentation-001
+test_case_id: E2E-04
+description: Replay with pathological TCP segmentation.
+profile: unit-model
+source:
+  run_dir: fixtures/demo-fx-001
+  anchor_sha256: 76d4fe09bcda705baba62dce731ac982a603c867369d72e05f254b2dc0149880
+replay:
+  chunk_sizes: [1, 17]
+faults: []
+expect:
+  verdict: PASS
+  require_published: true
+  require_fault_confirmed: false
+limits:
+  max_scenario_duration_s: 300

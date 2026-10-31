@@ -1,0 +1,217 @@
+{
+  "$id": "https://example.invalid/p08/metric.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Counters, gauges and histograms from one run (sections 4.1, 5.2). Generated from p08_bench.metrics -- do not hand-edit.",
+  "properties": {
+    "counters": {
+      "additionalProperties": {
+        "minimum": 0,
+        "type": "integer"
+      },
+      "description": "Monotonic run counters. A counter present at zero means measured and never happened; an absent counter means not measured.",
+      "examples": [
+        {
+          "driver_dropped_issue_total": 0,
+          "driver_events_issued_total": 0,
+          "driver_late_issue_total": 0,
+          "driver_slots_scheduled_total": 0
+        }
+      ],
+      "propertyNames": {
+        "type": "string"
+      },
+      "type": "object"
+    },
+    "gauges": {
+      "additionalProperties": {
+        "type": "number"
+      },
+      "type": "object"
+    },
+    "histograms": {
+      "additionalProperties": {
+        "properties": {
+          "bounds": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array"
+          },
+          "bucket_max_reportable": {
+            "description": "null when the open top bucket is occupied: a maximum cannot be derived from an unbounded bucket (section 4.3).",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "counts": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "estimate": {
+            "const": true,
+            "description": "A bucketed quantile is always an estimate; exact quantiles come from retained samples."
+          },
+          "n": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "overflow_count": {
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "bounds",
+          "counts",
+          "n",
+          "estimate"
+        ],
+        "type": "object"
+      },
+      "type": "object"
+    },
+    "label_rules": {
+      "description": "Cardinality control from section 5.2.",
+      "properties": {
+        "allowed_label_keys": {
+          "items": {
+            "enum": [
+              "cache_profile",
+              "lane",
+              "partition",
+              "profile",
+              "query_family",
+              "reason",
+              "stage",
+              "topic"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "forbidden_label_keys": {
+          "items": {
+            "enum": [
+              "build_id",
+              "dataset_id",
+              "event_id",
+              "offset",
+              "query_id",
+              "sequence",
+              "symbol"
+            ],
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "peaks": {
+      "additionalProperties": {
+        "type": "number"
+      },
+      "type": "object"
+    },
+    "stage_counters": {
+      "additionalProperties": false,
+      "description": "The nine counters of section 4.1. Each is an integer or null; null means not measured and must never be read as zero.",
+      "properties": {
+        "adapter_accepted_count": {
+          "description": "business-admissible per P03 policy; rejects are not loss",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "canonical_unique_count": {
+          "description": "distinct valid identities in the READY build",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "issued_count": {
+          "description": "events the source actually emitted; not receipt",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "kafka_physical_count": {
+          "description": "log offsets appended, including retry duplicates",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "offered_count": {
+          "description": "schedule slots requested; proves intent only",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "oracle_expected_count": {
+          "description": "expected accepted unique set, derived independently",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "producer_ack_count": {
+          "description": "producer received an ACK; not canonical READY",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "raw_physical_count": {
+          "description": "raw rows inserted, may contain physical duplicates",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "source_sealed_count": {
+          "description": "events with durable manifest; a .part file does not count",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "offered_count",
+        "issued_count",
+        "source_sealed_count",
+        "adapter_accepted_count",
+        "producer_ack_count",
+        "kafka_physical_count",
+        "raw_physical_count",
+        "canonical_unique_count",
+        "oracle_expected_count"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "stage_counters",
+    "counters"
+  ],
+  "title": "P08 metric snapshot",
+  "type": "object"
+}

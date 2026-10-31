@@ -1,0 +1,21 @@
+# E2E-05 / E2E-06: the source carries declared anomalies. Suppressed and
+# rejected events must be absent downstream, and that absence must NOT be
+# reported as transport loss (INV-15).
+version: p07.scenario.v1
+scenario_id: p07-declared-anomalies-001
+test_case_id: E2E-05
+description: Intentional omission, duplicate, stale quote and business rejects.
+profile: unit-model
+source:
+  run_dir: fixtures/demo-fx-002-faults
+  anchor_sha256: b043a51aa654d70c2ee5e3a50d766b88a60b82a9ea64df270b91b77408fa8feb
+  require_fault_plan: true
+replay:
+  chunk_sizes: [512]
+faults: []
+expect:
+  verdict: PASS
+  require_published: true
+  require_fault_confirmed: false
+limits:
+  max_scenario_duration_s: 120

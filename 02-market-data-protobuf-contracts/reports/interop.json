@@ -1,0 +1,332 @@
+{
+  "command": "cross-lang-conformance",
+  "environment": {
+    "cpu_count": 8,
+    "machine": "AMD64",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "processor": "Intel64 Family 6 Model 165 Stepping 2, GenuineIntel",
+    "python_protobuf_implementation": "upb",
+    "python_protobuf_runtime_version": "7.35.1",
+    "python_version": "3.14.4",
+    "toolchain_lock": {
+      "cpp_protobuf_runtime_version": "35.1.0",
+      "cxx_compiler": "g++.exe (Rev5, Built by MSYS2 project) 16.1.0",
+      "descriptor_v1_sha256": "0e6fc2b28a56b6817075dac8a2e7731d6b2685ce0acbfd7e46811c9bbdaab1fb",
+      "proto_v1_1_sha256": "4fce411e2d3e040479886b41e76356e5174432575e83e86701293ec4f254ea5e",
+      "proto_v1_sha256": "c4542ad763be42f87c4c475d5beb140879561cb1a6a9393ca29dcb4bb9959cd4",
+      "proto_v2_probe_sha256": "5864d204679dec39a3a2fad87d8a52c15ec67908610eacfa5e2ad2d3a823c384",
+      "protoc_version": "35.1",
+      "python_protobuf_implementation": "upb",
+      "python_protobuf_runtime_version": "7.35.1",
+      "python_version": "3.14.4"
+    }
+  },
+  "failed": 0,
+  "matrix": [
+    {
+      "consumer": "cpp v1",
+      "detail": {
+        "accepted": 2000,
+        "actual_events": 2000,
+        "cpp_protobuf_runtime_version": "7.35.1",
+        "decode_errors": 0,
+        "envelope_rejects": 0,
+        "events_accepted": 2000,
+        "exit_code": 0,
+        "final_offset": 133738,
+        "first_error": "",
+        "frames_read": 2000,
+        "framing_errors": 0,
+        "projections_identical": true,
+        "reasons": {},
+        "reference_events": 2000,
+        "stderr": "",
+        "stream_end": "COMPLETED"
+      },
+      "expected": "ACCEPT",
+      "producer": "python v1",
+      "verdict": "PASS"
+    },
+    {
+      "consumer": "python v1",
+      "detail": {
+        "accepted": 2000,
+        "actual_events": 2000,
+        "committed": true,
+        "cpp_protobuf_runtime_version": "7.35.1",
+        "events_encoded": 2000,
+        "exit_code": 0,
+        "first_error": "",
+        "frames_written": 2000,
+        "json_lines_read": 2000,
+        "projections_identical": true,
+        "python_accepted": 2000,
+        "reasons": {},
+        "reference_events": 2000,
+        "rejected": 0,
+        "stderr": ""
+      },
+      "expected": "ACCEPT",
+      "producer": "cpp v1",
+      "verdict": "PASS"
+    },
+    {
+      "consumer": "reference projection",
+      "detail": {
+        "accepted": 2000,
+        "actual_events": 2000,
+        "note": "C++ reader vs Python reader on identical input",
+        "projections_identical": true,
+        "reference_events": 2000
+      },
+      "expected": "ACCEPT",
+      "producer": "cpp strict_json",
+      "verdict": "PASS"
+    },
+    {
+      "consumer": "cpp v1",
+      "detail": {
+        "note": "Protobuf output is not canonical, so this is an observation, not an assertion; the oracle is the typed projection (ADR-005)",
+        "wire_bytes_identical": true
+      },
+      "expected": "SEMANTIC EQUALITY (bytes not required to match)",
+      "producer": "python v1",
+      "verdict": "PASS"
+    },
+    {
+      "consumer": "python v1",
+      "detail": {
+        "accepted": 2000,
+        "actual_events": 2000,
+        "decode": {
+          "decode_errors": 0,
+          "events_accepted": 2000,
+          "exit_code": 0,
+          "frames_read": 2000,
+          "op": "decode",
+          "python_protobuf_runtime_version": "7.35.1",
+          "sample_extras": [
+            {
+              "unknown_field_numbers": [
+                20
+              ]
+            },
+            {
+              "unknown_field_numbers": [
+                20
+              ]
+            },
+            {
+              "unknown_field_numbers": [
+                20
+              ]
+            }
+          ],
+          "stderr": "",
+          "stream_end": "COMPLETED",
+          "unsupported_event_kind": 0,
+          "variant": "v1"
+        },
+        "encode": {
+          "committed": true,
+          "events_encoded": 2000,
+          "exit_code": 0,
+          "op": "encode",
+          "python_protobuf_runtime_version": "7.35.1",
+          "rejected": 0,
+          "stderr": "",
+          "variant": "v1_1"
+        },
+        "projections_identical": true,
+        "reference_events": 2000
+      },
+      "expected": "ACCEPT core; field 20 unknown",
+      "producer": "python v1_1",
+      "verdict": "PASS"
+    },
+    {
+      "consumer": "python v1_1",
+      "detail": {
+        "accepted": 2000,
+        "actual_events": 2000,
+        "decode": {
+          "decode_errors": 0,
+          "events_accepted": 2000,
+          "exit_code": 0,
+          "frames_read": 2000,
+          "op": "decode",
+          "python_protobuf_runtime_version": "7.35.1",
+          "sample_extras": [
+            {
+              "feed_label": null,
+              "has_feed_label": false,
+              "unknown_field_numbers": []
+            },
+            {
+              "feed_label": null,
+              "has_feed_label": false,
+              "unknown_field_numbers": []
+            },
+            {
+              "feed_label": null,
+              "has_feed_label": false,
+              "unknown_field_numbers": []
+            }
+          ],
+          "stderr": "",
+          "stream_end": "COMPLETED",
+          "unsupported_event_kind": 0,
+          "variant": "v1_1"
+        },
+        "encode": {
+          "committed": true,
+          "events_encoded": 2000,
+          "exit_code": 0,
+          "op": "encode",
+          "python_protobuf_runtime_version": "7.35.1",
+          "rejected": 0,
+          "stderr": "",
+          "variant": "v1"
+        },
+        "projections_identical": true,
+        "reference_events": 2000
+      },
+      "expected": "ACCEPT; feed_label absent",
+      "producer": "python v1",
+      "verdict": "PASS"
+    },
+    {
+      "consumer": "python v1",
+      "detail": {
+        "accepted": 2000,
+        "actual_events": 2000,
+        "decode": {
+          "decode_errors": 0,
+          "events_accepted": 2000,
+          "exit_code": 0,
+          "frames_read": 2000,
+          "op": "decode",
+          "python_protobuf_runtime_version": "7.35.1",
+          "sample_extras": [
+            {
+              "unknown_field_numbers": []
+            },
+            {
+              "unknown_field_numbers": []
+            },
+            {
+              "unknown_field_numbers": []
+            }
+          ],
+          "stderr": "",
+          "stream_end": "COMPLETED",
+          "unsupported_event_kind": 0,
+          "variant": "v1"
+        },
+        "encode": {
+          "committed": true,
+          "events_encoded": 2000,
+          "exit_code": 0,
+          "op": "encode",
+          "python_protobuf_runtime_version": "7.35.1",
+          "rejected": 0,
+          "stderr": "",
+          "variant": "v1"
+        },
+        "projections_identical": true,
+        "reference_events": 2000
+      },
+      "expected": "ACCEPT",
+      "producer": "python v1",
+      "verdict": "PASS"
+    },
+    {
+      "consumer": "python v1_1",
+      "detail": {
+        "accepted": 2000,
+        "actual_events": 2000,
+        "decode": {
+          "decode_errors": 0,
+          "events_accepted": 2000,
+          "exit_code": 0,
+          "frames_read": 2000,
+          "op": "decode",
+          "python_protobuf_runtime_version": "7.35.1",
+          "sample_extras": [
+            {
+              "feed_label": "prod-a",
+              "has_feed_label": true,
+              "unknown_field_numbers": []
+            },
+            {
+              "feed_label": "prod-a",
+              "has_feed_label": true,
+              "unknown_field_numbers": []
+            },
+            {
+              "feed_label": "prod-a",
+              "has_feed_label": true,
+              "unknown_field_numbers": []
+            }
+          ],
+          "stderr": "",
+          "stream_end": "COMPLETED",
+          "unsupported_event_kind": 0,
+          "variant": "v1_1"
+        },
+        "encode": {
+          "committed": true,
+          "events_encoded": 2000,
+          "exit_code": 0,
+          "op": "encode",
+          "python_protobuf_runtime_version": "7.35.1",
+          "rejected": 0,
+          "stderr": "",
+          "variant": "v1_1"
+        },
+        "projections_identical": true,
+        "reference_events": 2000
+      },
+      "expected": "ACCEPT",
+      "producer": "python v1_1",
+      "verdict": "PASS"
+    },
+    {
+      "consumer": "python v1",
+      "detail": {
+        "decode": {
+          "decode_errors": 0,
+          "events_accepted": 0,
+          "exit_code": 0,
+          "frames_read": 100,
+          "op": "decode",
+          "python_protobuf_runtime_version": "7.35.1",
+          "sample_extras": [],
+          "stderr": "",
+          "stream_end": "COMPLETED",
+          "unsupported_event_kind": 100,
+          "variant": "v1"
+        },
+        "encode": {
+          "committed": true,
+          "events_encoded": 100,
+          "exit_code": 0,
+          "op": "encode",
+          "python_protobuf_runtime_version": "7.35.1",
+          "rejected": 0,
+          "stderr": "",
+          "variant": "v2_probe"
+        },
+        "encoded": 100,
+        "events_accepted": 0,
+        "unsupported_event_kind": 100
+      },
+      "expected": "FAIL CLOSED as UNSUPPORTED_EVENT_KIND",
+      "producer": "python v2_probe (depth_update)",
+      "verdict": "PASS"
+    }
+  ],
+  "ok": true,
+  "passed": 9,
+  "skipped_with_reason": 0
+}

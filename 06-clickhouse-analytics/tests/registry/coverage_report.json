@@ -1,0 +1,175 @@
+{
+  "by_group": {
+    "A": {
+      "declared": 0,
+      "executed": 14,
+      "total": 14
+    },
+    "AA": {
+      "declared": 4,
+      "executed": 10,
+      "total": 14
+    },
+    "AB": {
+      "declared": 6,
+      "executed": 8,
+      "total": 14
+    },
+    "AC": {
+      "declared": 12,
+      "executed": 2,
+      "total": 14
+    },
+    "AD": {
+      "declared": 0,
+      "executed": 14,
+      "total": 14
+    },
+    "B": {
+      "declared": 0,
+      "executed": 14,
+      "total": 14
+    },
+    "C": {
+      "declared": 0,
+      "executed": 14,
+      "total": 14
+    },
+    "D": {
+      "declared": 0,
+      "executed": 14,
+      "total": 14
+    },
+    "E": {
+      "declared": 0,
+      "executed": 14,
+      "total": 14
+    },
+    "F": {
+      "declared": 1,
+      "executed": 13,
+      "total": 14
+    },
+    "G": {
+      "declared": 0,
+      "executed": 14,
+      "total": 14
+    },
+    "H": {
+      "declared": 0,
+      "executed": 14,
+      "total": 14
+    },
+    "I": {
+      "declared": 0,
+      "executed": 14,
+      "total": 14
+    },
+    "J": {
+      "declared": 1,
+      "executed": 13,
+      "total": 14
+    },
+    "K": {
+      "declared": 3,
+      "executed": 11,
+      "total": 14
+    },
+    "L": {
+      "declared": 13,
+      "executed": 1,
+      "total": 14
+    },
+    "M": {
+      "declared": 11,
+      "executed": 3,
+      "total": 14
+    },
+    "N": {
+      "declared": 14,
+      "executed": 0,
+      "total": 14
+    },
+    "O": {
+      "declared": 3,
+      "executed": 11,
+      "total": 14
+    },
+    "P": {
+      "declared": 11,
+      "executed": 3,
+      "total": 14
+    },
+    "Q": {
+      "declared": 11,
+      "executed": 3,
+      "total": 14
+    },
+    "R": {
+      "declared": 1,
+      "executed": 13,
+      "total": 14
+    },
+    "S": {
+      "declared": 11,
+      "executed": 3,
+      "total": 14
+    },
+    "T": {
+      "declared": 13,
+      "executed": 1,
+      "total": 14
+    },
+    "U": {
+      "declared": 7,
+      "executed": 7,
+      "total": 14
+    },
+    "V": {
+      "declared": 11,
+      "executed": 3,
+      "total": 14
+    },
+    "W": {
+      "declared": 12,
+      "executed": 2,
+      "total": 14
+    },
+    "X": {
+      "declared": 14,
+      "executed": 0,
+      "total": 14
+    },
+    "Y": {
+      "declared": 8,
+      "executed": 6,
+      "total": 14
+    },
+    "Z": {
+      "declared": 9,
+      "executed": 5,
+      "total": 14
+    }
+  },
+  "counts_by_kind": {
+    "automated": 230,
+    "model_only": 42,
+    "needs_clickhouse": 157,
+    "needs_infra": 91
+  },
+  "declared_unexecutable": 237,
+  "executed_here": 244,
+  "matrix": {
+    "cases": 420,
+    "e2e": 32,
+    "groups": 30
+  },
+  "notes": [
+    "executed_here counts cases a test in this repo exercises.",
+    "model_only results are evidence about this pipeline's logic, never about ClickHouse: section 4 and section 22.",
+    "declared_unexecutable cases need a real ClickHouse, Kafka/P05, a cluster or hardware fault injection; they are NOT_RUN, which is not the same as passing (section 14.2)."
+  ],
+  "unaccounted": [],
+  "verdict": "INCONCLUSIVE",
+  "verdict_reason": "Full-matrix execution needs the integration and capacity profiles of section 2.2. This host has no ClickHouse and no container runtime, so ClickHouse-semantics and scale cases are NOT_RUN."
+}

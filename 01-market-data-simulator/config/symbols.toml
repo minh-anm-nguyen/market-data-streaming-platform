@@ -1,0 +1,90 @@
+# A reference library of symbol definitions, for copying into a config file.
+#
+# NOTE: this file is NOT included automatically. The config parser has no
+# include mechanism on purpose -- one file resolves to one config with one hash,
+# which is what makes a run reproducible and auditable. Paste the blocks you
+# want into your config's [symbols] section and list them in [symbols].order.
+#
+# A symbol name containing a dot MUST be quoted as a TOML key -- bare
+# [US500.CFD] would parse as a nested table "CFD" inside "US500", not as a
+# symbol called US500.CFD.
+#
+# All values are integer ticks. The displayed price is price_ticks / price_scale.
+# These are SIMULATION parameters chosen for testing; they do not reproduce any
+# particular broker's conventions, and the prices are synthetic.
+
+# --- FX majors, 5-decimal convention (scale 100000) -------------------------
+
+[EURUSD]
+price_scale = 100000
+initial_price_ticks = 108347      # displays as 1.08347
+min_price_ticks = 100000
+max_price_ticks = 120000
+min_spread_ticks = 1
+max_spread_ticks = 5
+max_step_ticks = 8
+weight = 3
+
+[GBPUSD]
+price_scale = 100000
+initial_price_ticks = 126540
+min_price_ticks = 115000
+max_price_ticks = 140000
+min_spread_ticks = 1
+max_spread_ticks = 8
+max_step_ticks = 10
+weight = 2
+
+[AUDUSD]
+price_scale = 100000
+initial_price_ticks = 65820
+min_price_ticks = 55000
+max_price_ticks = 78000
+min_spread_ticks = 1
+max_spread_ticks = 9
+max_step_ticks = 10
+weight = 1
+
+# --- JPY pairs, 3-decimal convention (scale 1000) ---------------------------
+
+[USDJPY]
+price_scale = 1000
+initial_price_ticks = 151230      # displays as 151.230
+min_price_ticks = 140000
+max_price_ticks = 165000
+min_spread_ticks = 1
+max_spread_ticks = 6
+max_step_ticks = 9
+weight = 1
+
+[EURJPY]
+price_scale = 1000
+initial_price_ticks = 163940
+min_price_ticks = 150000
+max_price_ticks = 180000
+min_spread_ticks = 1
+max_spread_ticks = 10
+max_step_ticks = 14
+weight = 1
+
+# --- CFDs, wider bands and wider spreads ------------------------------------
+
+[XAUUSD]
+price_scale = 100
+initial_price_ticks = 241580      # displays as 2415.80
+min_price_ticks = 200000
+max_price_ticks = 280000
+min_spread_ticks = 10
+max_spread_ticks = 60
+max_step_ticks = 80
+weight = 1
+
+["US500.CFD"]
+price_scale = 10
+initial_price_ticks = 58240       # displays as 5824.0
+min_price_ticks = 45000
+max_price_ticks = 70000
+min_spread_ticks = 2
+max_spread_ticks = 15
+max_step_ticks = 25
+weight = 1

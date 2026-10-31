@@ -1,0 +1,20 @@
+{
+  "datasets": {
+    "demo-fx-001": {
+      "events": 2000,
+      "events_sha256": "76d4fe09bcda705baba62dce731ac982a603c867369d72e05f254b2dc0149880",
+      "purpose": "clean baseline; every accepted identity should reach READY"
+    },
+    "demo-fx-002": {
+      "events": 1200,
+      "events_sha256": "b043a51aa654d70c2ee5e3a50d766b88a60b82a9ea64df270b91b77408fa8feb",
+      "purpose": "declared anomalies; suppressed and rejected events must not reach Kafka"
+    },
+    "demo-fx-003": {
+      "events": 401,
+      "events_sha256": "a9c5db91a33a8f064a78ecb1d9ba12e3f0c40198ff2641e99de236f145d1e9b2",
+      "purpose": "undeclared identity conflict; sealing succeeds, the oracle must still refuse"
+    }
+  },
+  "note": "External trust anchors for the fixtures. Kept outside each run directory on purpose; a bundle that vouches for itself proves nothing."
+}

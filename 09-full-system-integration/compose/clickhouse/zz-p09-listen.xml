@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<!--
+  P09: pin the listeners to IPv4 only.
+
+  Why this file exists. The official image ships
+  /etc/clickhouse-server/config.d/docker_related_config.xml, which declares both
+  <listen_host>::</listen_host> and <listen_host>0.0.0.0</listen_host>. On a
+  kernel with IPv6 disabled, which is the case for the WSL2 kernel this lab runs
+  on, every [::] bind fails with
+
+      Listen [::]:9000 failed: ... EAI: Address family for hostname not supported
+
+  and ClickHouse logs that at Warning level and carries on. The server then
+  comes up with some listeners bound and some not, and the image's HTTP
+  healthcheck on 8123 reports "healthy" while the native protocol on 9000
+  refuses connections. Everything that speaks native, including
+  clickhouse-client, P06's Makefile targets and this project's DDL init job,
+  then fails against a container Compose is willing to call ready.
+
+  That is P09 section 2 in miniature: service_healthy is a statement about a
+  probe, not about the service. The probe in compose.dev.yaml is widened to
+  cover both ports; this file removes the cause rather than only detecting it.
+
+  replace="replace" is required. config.d files MERGE by default, so a second
+  <listen_host> would append to the image's list and leave the failing [::]
+  entry in place.
+
+  The filename sorts after docker_related_config.xml deliberately: ClickHouse
+  applies config.d in lexicographic order, so the "zz-" prefix is load-bearing.
+
+  Note for anyone editing this comment: XML forbids a double hyphen inside a
+  comment. ClickHouse refuses to start on a config it cannot parse and
+  crash-loops, which is the correct behaviour and an easy own-goal.
+
+  Re-pin for a host that does have IPv6: binding 0.0.0.0 only would then
+  silently drop IPv6 clients, the same class of mistake in reverse.
+-->
+<clickhouse>
+    <listen_host replace="replace">0.0.0.0</listen_host>
+</clickhouse>

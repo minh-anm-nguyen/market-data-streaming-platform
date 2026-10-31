@@ -1,0 +1,9 @@
+# Run output. Datasets are reproducible from (config, seed, t0, fault plan), so
+# there is no reason to commit them -- and at 200 MB per million events, good
+# reason not to.
+runs/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.hypothesis/

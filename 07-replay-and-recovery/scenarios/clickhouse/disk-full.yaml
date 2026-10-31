@@ -1,0 +1,20 @@
+# E2E-34: the sink runs out of space while P05 is writing. Nothing may be
+# committed past the unfinished batch, and the run must not publish.
+version: p07.scenario.v1
+scenario_id: p07-ch-disk-full-001
+test_case_id: E2E-34
+description: Disk full on the raw write path.
+profile: unit-model
+source:
+  run_dir: fixtures/demo-fx-001
+  anchor_sha256: 76d4fe09bcda705baba62dce731ac982a603c867369d72e05f254b2dc0149880
+replay:
+  chunk_sizes: [4096]
+faults:
+  - type: ch_disk_full
+    target: clickhouse_server
+    free_bytes: 0
+expect:
+  verdict: INCONCLUSIVE
+limits:
+  max_scenario_duration_s: 120

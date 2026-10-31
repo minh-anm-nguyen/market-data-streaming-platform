@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "p08-bench"
+version = "0.1.0"
+description = "P08 high-throughput benchmark harness, metrology kernel and verdict analyzer (synthetic workloads, lab only)"
+requires-python = ">=3.12"
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest>=8", "hypothesis>=6", "psutil>=5.9"]
+
+[project.scripts]
+p08-bench = "p08_bench.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+# P08 has no async code, but pytest-asyncio is installed in the shared venv and
+# warns at configure time when this is unset -- which filterwarnings below turns
+# into a collection error. Pin it rather than loosen the warning filter.
+asyncio_default_fixture_loop_scope = "function"
+markers = [
+    "slow: takes more than a few seconds",
+    "perf: throughput or latency measurement, not a correctness assertion",
+    "soak: long-running resource-growth test",
+    "chaos: injects a fault and requires a receipt",
+    "statistical: validates the analyzer against synthetic distributions",
+    "upstream: needs P02-P07 implementations that do not exist yet",
+]
+filterwarnings = ["error::DeprecationWarning"]
