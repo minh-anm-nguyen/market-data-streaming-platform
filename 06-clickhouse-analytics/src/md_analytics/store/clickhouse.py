@@ -144,10 +144,42 @@ class ClickHouseHttpClient:
         raw = self._request(
             f"{sql}\nFORMAT JSONCompact", params=params, settings=settings
         )
+        # An empty body is not an empty result set. A successful JSONCompact
+        # SELECT always carries "meta" and "data", and returns
+        # {"meta":[...],"data":[]} when nothing matched -- so there is no
+        # response ClickHouse can send that legitimately decodes to zero rows
+        # via an empty body. Returning [] here made a truncated response
+        # indistinguishable from an empty table, and P09's pipeline duly
+        # refused a build with "no raw rows for dataset ds-..." while that
+        # dataset held 103,438 rows. Reporting the data as absent because
+        # the transport failed is exactly the confusion section 5.2 forbids.
         if not raw.strip():
-            return []
-        payload = json.loads(raw.decode("utf-8"))
-        return list(payload.get("data", []))
+            raise StoreError(
+                "ClickHouse returned an empty body for a SELECT; the "
+                "result is unknown, not empty",
+                code="CLICKHOUSE_EMPTY_RESPONSE",
+            )
+        try:
+            payload = json.loads(raw.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise StoreError(
+                "ClickHouse response is not decodable JSONCompact "
+                "(%d bytes): %s" % (len(raw), exc),
+                code="CLICKHOUSE_BAD_RESPONSE",
+            ) from exc
+        if not isinstance(payload, dict) or "data" not in payload:
+            # .get("data", []) would turn an error object, or a response in
+            # some other format, into a clean "nothing matched".
+            raise StoreError(
+                "ClickHouse response carries no 'data' key; got: %s"
+                % (
+                    sorted(payload)
+                    if isinstance(payload, dict)
+                    else type(payload).__name__
+                ),
+                code="CLICKHOUSE_NO_DATA_KEY",
+            )
+        return list(payload["data"])
 
     def query_scalar(self, sql: str, *, params: dict[str, Any] | None = None) -> Any:
         rows = self.query_rows(sql, params=params)
